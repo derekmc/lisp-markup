@@ -59,37 +59,66 @@
           close = "</" + tagname + ">";
       return [open, close];
   }
-
-  /* list2html: turn a lisp-style list datastructure into html 
-   * parameters;
-   *   t:
-   *     the list datastructure to be converted.
-   *   macros: [[name, macro]]
-   *     if 'name' matches the exact string of the first item in a list,
-   *     the function 'macro' is applied to transform the rest of the list.
+  /*
    *   taghandlers: [[name, match, handler]]
    *     'match' is used to determine if a given handler should process a set of tags
    *     iff match(tagstr) returns true, then handler(tagstr, props) is called
    *     'handler' should return [opentag, closetag]
+   */
+
+  /* list2markup: turn a lisp-style list datastructure into html 
+   * parameters:
+   *   l:
+   *     the list datastructure to be converted.
+   *     - an object is a set of properties
+   *     - a function in the first position of a list is a macro.
+   *     - a function in a non-first position is a template function.
+   *   data:
+   *     data parameter to macro or template functions.
    */ 
-  exports.list2html = function(l, macros, taghandlers){
+  exports.list2markup = function(l, data){
       T(l, []);
-      T(macros, undefined, [['', function(){}]]) // [[name, macro]]
-      T(taghandlers, undefined, [['', function(){},function(){}]]) //[[name, match, handler]]
+      T(data, {}, [], undefined);
       var props = {},
-          tagname = l[0],
+          first = l[0],
           parts = [''];  //save space for opening tag
-      if(typeof tagname != "string"){
-          tagname = null; }
-      // TODO macros
+      if(typeof first == "function"){
+          // first is a macro
+          var macro = first;
+          var macro_result = macro(l, data, exports.list2markup);
+          if(typeof macro_result == "string"){
+              return macro_result; }
+          else if(Array.isArray(macro_result)){
+              return exports.list2markup(macro_result, data); }
+          else if(!macro_result){
+              return ""; }
+          else{
+              throw "list2markup: macro returned value with invalid type."; }
+          // returned
+      }
+
+      var tagname = null;
+      if(typeof first == "string"){
+          tagname = first; }
+
       for(var i=0; i<l.length; ++i){
           if(i==0 && tagname) continue; //skip tag
           var x = l[i];
           if(Array.isArray(x)){
-              parts.push(exports.list2html(x, macros, taghandlers)); }
+              parts.push(exports.list2markup(x, data)); }
           else if(typeof x == "object"){
               for(var k in x){
                   props[k] = x[k]; }}
+          else if(typeof x == "function"){
+              // template function
+              var template = x;
+              var template_result = template(data);
+              if(typeof template_result == "string"){
+                  parts.push(template_result); }
+              else if(!template_result){
+                  parts.push(""); }
+              else{
+                  throw "list2markup: template returned value with invalid type."; }}
           else{
                if(x) parts.push(x.toString()); }
       }
@@ -103,4 +132,4 @@
   }
   
 
-})(typeof exports === 'undefined'? this['List2Html']={}: exports);
+})(typeof exports === 'undefined'? this['List2Markup']={}: exports);
