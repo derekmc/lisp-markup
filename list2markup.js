@@ -107,6 +107,87 @@
   
   exports.customMarkupConverter = customMarkupConverter;
   exports.toHtml = customMarkupConverter(htmlTagHandler);
+  exports.macros = {
+      foreach: function foreach( l,data,list2markup){
+          var result_parts = [];
+          var listgetter = l[1];
+          var template = l[2];
+          var datalist = data;
+          if(l.length != 3){
+              throw "List2Markup.macros.foreach expects 2 arguments"; }
+          if(typeof listgetter == "function"){
+              datalist = listgetter(data); }
+          else if(typeof listgetter == "string"){
+              datalist = data[listgetter]; }
+          for(var i=0; i<datalist.length; ++i){
+              var item = datalist[i];
+              result_parts.push(list2markup(template, item)); }
+          return result_parts.join(''); },
+      get: function( l,data,list2markup){
+          return data[l[1]]; },
+      css: function( l,data,list2markup){
+          var result_parts = ['<style>'];
+          for(var i=1; i<l.length; ++i){
+              handleEntry(l[i]); }
+          result_parts.push('</style>');
+          return result_parts.join('');
+          
+          function handleRule(rule){
+              if(typeof rule == "function"){
+                  rule = rule(data); 
+                  if(typeof rule != "string"){
+                       throw "List2Markup.macros.css: template function for css rule did not return a string value."; }
+                  result_parts.push(rule); }
+              else if(typeof rule == "string"){
+                  result_parts.push(rule); }
+              else if(Array.isArray(rule)){
+                  var first = rule[0];
+                  if(typeof first == "function"){
+                      return handleRule(first( rule,data,list2markup)); }
+                  if(typeof first == "string"){
+                      if(rule.length != 2){
+                          throw "List2Markup.macros.css: css rule must have 2 entries, property and value"; }
+                      var property = first;
+                      var value = rule[1];
+                      if(Array.isArray(value)){
+                          if(typeof value[0] != 'function'){
+                              throw "List2Markup.macros.css: if css rule value is list, it must be a macro call."; }
+                          var newvalue = value[0]( value,data,list2markup);
+                          var newrule = [property, newvalue];
+                          return handleRule(newrule); }
+                      if(typeof value == "function"){
+                          value = value(data); }
+                      if(typeof value != "string"){
+                          throw "List2Markup.macros.css: css rule value not a string, macro call, or template returning a string."; }
+                      result_parts.push(property + ": "  + value + "; "); }
+                  else{
+                      throw "List2Markup.macros.css: css rule property not a string"; }}
+          }
+          function handleEntry(entry){
+              if(typeof entry == "string"){
+                  result_parts.push(entry); }
+              else if(typeof entry == "function"){
+                  entry = entry(data);
+                  if(typeof entry != "string"){
+                      throw "List2Markup.macros.css: css entry template did not return a string" }
+                  result_parts.push(entry); }
+              else if(Array.isArray(entry)){
+                  var first = entry[0];
+                  if(typeof first == "function"){
+                      return handleEntry(first( entry,data,list2markup)); }
+                  if(typeof first == "string"){
+                      var selector = first;
+                      result_parts.push(selector + "{");
+                      for(var i=1; i<entry.length; ++i){
+                          var rule = entry[i];
+                          handleRule(rule); }
+                      result_parts.push("}"); }
+                  else{
+                      throw "List2Markup.macros.css: invalid selector type"; }}
+              else{
+                  throw "List2Markup.macros.css: invalid entry type"; }}},
+              
+  }
 
   function customMarkupConverter(taghandler){
       if(typeof taghandler != "function"){

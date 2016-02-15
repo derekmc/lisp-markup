@@ -10,6 +10,7 @@ var List2Markup = require("./list2markup.js");
 // foreach -- iterate over data.
 // usage: 
 //   [foreach, listgetter, entrytemplate]
+/*
 function foreach( l,data,list2markup){
     var result_parts = [];
     var listgetter = l[1];
@@ -30,21 +31,25 @@ function get( l,data,list2markup){
 //TODO
 function css( l,data,list2markup){
 }
+*/
 
 
 function test(){
+    var css = List2Markup.macros.css;
+    var foreach = List2Markup.macros.foreach;
+    var get = List2Markup.macros.get;
 
     var namelist_template = [
         [css, 
           ['body',
-            ['font-family', 'sans-serif'],
-            ['max-width', '480px']
+            'font-family: sans-serif; ',
+            ['max-width', '480px'],
             ['margin-left', 'auto'],
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
-            ['background-color', '#000000'],
-            ['border-radius', '20px'],
+            ['background-color', [get, 'titlebg']],
+            ['border-radius', function(){ return '20px'; }],
             ['padding', '50px 100px'],
             ['width', '100%'],
             ['margin', '10px']],
@@ -63,6 +68,7 @@ function test(){
  
     var physics_names = {
        title: "Physicist Names!",
+       titlebg: "red",
        namelist: [
          ['Isaac', 'Newton'],
          ['Albert', 'Einstein'],
