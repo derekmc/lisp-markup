@@ -110,7 +110,7 @@
 
   function customMarkupConverter(taghandler){
       if(typeof taghandler != "function"){
-          throw "List2Markup.customMarkupConverter: taghandler argument must be a function"; }
+          throw "List2Markup markup conversion function: taghandler argument must be a function"; }
       
       return markupConverter;
       function markupConverter(l, data){
@@ -127,6 +127,9 @@
                   return macro_result; }
               else if(Array.isArray(macro_result)){
                   return markupConverter(macro_result, data); }
+              else if(typeof macro_result == "object" && macro_result.constructor == ({}).constructor){
+                  throw "List2Markup markup conversion function: TODO implement allowing returning properties from macros.";
+              }
               else if(!macro_result){
                   return ""; }
               else{
@@ -166,6 +169,4 @@
           return result_parts.join('');
       }
   }
-  
-
 })(typeof exports === 'undefined'? this['List2Markup']={}: exports);
