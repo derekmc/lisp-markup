@@ -7,16 +7,6 @@ if(typeof module !== 'undefined'){
 else{
     List2Markup = window.List2Markup; }
 
-// TODO
-//   move macros to List2Markup module
-//   implement more macros: with, css
-//   in foreach macro listgetter should be optional depending on the number of arguments.
-// List2Markup macros
-//
-// foreach -- iterate over data.
-// usage: 
-//   [foreach, listgetter, entrytemplate]
-
 function test(){
     var css = List2Markup.macros.css;
     var foreach = List2Markup.macros.foreach;
@@ -31,9 +21,8 @@ function test(){
             ['margin-left', 'auto'],
             ['margin-right', 'auto']],
           ['#main', ['position', 'relative']],
-          ['#main .namelist',
-            ['border-radius', function(data){
-                return data.border_radius + "px"; }],
+          ['#main table.namelist',
+            ['border-spacing', '0px'],
             ['width', '100%'],
             ['background', '#ffffff'],
             ['margin-left', 'auto'],
@@ -46,21 +35,20 @@ function test(){
             ['padding', '50px 100px'],
             //['width', '100%'],
             ['margin', '10px 0px']],
-          ['tr:nth-child(even)',
-            ['background', '#cccccc']],
+          ['tr:nth-child(odd)',
+            ['background', '#dddddd']],
           ['.firstname',
             ['text-align', 'center'],
             ['font-style', 'italic']],
           ['.lastname',
             ['text-align', 'center'],
             ['font-weight', 'bold']],
+          ['tr:first-child',
+            ['color', '#fff'],
+            ['background', '#444']],
           ['th',
             ['font-size', '140%'],
-            ['padding', '5px'],
-            ['color', 'white'],
-            ['background', '#444'],
-            ['border-radius', function(data){
-                return data.border_radius + 'px'; }]],
+            ['padding', '5px']],
           'td{ padding:5px 15px; }',
         ],
         ['#main',
