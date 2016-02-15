@@ -163,7 +163,7 @@
                    if(x) result_parts.push(x.toString()); }
           }
           if(tagname){
-              var tags = handler(tagname, props);
+              var tags = taghandler(tagname, props);
               result_parts[0] = tags[0];
               result_parts.push(tags[1]); }
           return result_parts.join('');
