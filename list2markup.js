@@ -22,7 +22,7 @@
  *       - objects are property sets which are added to current node in the markup.
  *       - a function in the first position of a list is a macro.
  *       - a function in a non-first position is a template function.
- *       - templates in l are called with just the data paramter.
+ *       - templates in l are called with the data paramter.
  *          template( data)
  *          templates must return a string.
  *       - macros in l are called with the following parameters:
