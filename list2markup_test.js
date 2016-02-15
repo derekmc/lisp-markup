@@ -27,11 +27,30 @@ function foreach( l,data,list2markup){
 function get( l,data,list2markup){
     return data[l[1]]; }
             
+//TODO
+function css( l,data,list2markup){
+}
 
 
 function test(){
 
     var namelist_template = [
+        [css, 
+          ['body',
+            ['font-family', 'sans-serif'],
+            ['max-width', '480px']
+            ['margin-left', 'auto'],
+            ['margin-right', 'auto']],
+          ['h1.maintitle',
+            ['color', '#ffffff'],
+            ['background-color', '#000000'],
+            ['border-radius', '20px'],
+            ['padding', '50px 100px'],
+            ['width', '100%'],
+            ['margin', '10px']],
+          ['tr:nth-child(even)',
+            ['background', '#cccccc']],
+        ],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.nametable',
