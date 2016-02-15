@@ -22,11 +22,11 @@
  *       - objects are property sets which are added to current node in the markup.
  *       - a function in the first position of a list is a macro.
  *       - a function in a non-first position is a template function.
- *       - templates in l are called with the data paramter.
- *          template( data)
+ *       - templates in l are called with the data parameter.
+ *          template( data);
  *          templates must return a string.
  *       - macros in l are called with the following parameters:
- *          macro( l,data,markupConverter)
+ *          macro( l,data,markupConverter);
  *            - l: the current list this macro is applied to,
  *                 which will include the macro itself in the first position.
  *            - data: for templating, this is the same parameter that is passed to markupCoverter( l,data), see more below.
@@ -35,12 +35,12 @@
  *            The macro's return value is used in place of the original list with the macro.
  *            If it returns a string, that string is inserted into the markup.
  *            If it returns a list, the list is evaluated by the markupConverter
- *            If it returns an object, the properties are added to the parent node in the markup.
+ *            If it returns an object, the properties are added to the current node in the markup.
  *            It may not return a function.
  *   data:
  *     this parameter allows your list datastructure to be used as a template.
  *     the values in the final markup are filled in with the data values from this list.
- *     Both template and macro functions within your datastructure are passed this parameter as described above.
+ *     Both template and macro functions within l are passed this parameter as described above.
  */ 
 
 
