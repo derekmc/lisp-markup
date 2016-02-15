@@ -54,17 +54,17 @@ function test(){
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.namelist',
-            ['tr', ['th', 'First Name'],
-                   ['th', 'Last Name']],
+            ['tr', ['th', 'Last Name'],
+                   ['th', 'First Name']],
             [foreach, 'namelist',
-              ['tr', ['td.firstname', [get, 0]],
-                     ['td.lastname', [get, 1]]]]]]
+              ['tr', ['td.lastname', [get, 1]],
+                     ['td.firstname', [get, 0]]]]]]
     ]
  
     var physics_names_data = {
        title: "Physicist Names",
        bg: "black",
-       titlebg: "red",
+       titlebg: "blue",
        border_radius: '10',
        namelist: [
          ['Isaac', 'Newton'],
