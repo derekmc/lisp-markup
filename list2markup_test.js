@@ -1,6 +1,10 @@
 
 var List2Markup = require("./list2markup.js");
 
+// TODO
+//   move macros to List2Markup module
+//   implement more macros: with, css
+//   in foreach macro listgetter should be optional depending on the number of arguments.
 // List2Markup macros
 //
 // foreach -- iterate over data.
