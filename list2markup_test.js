@@ -1,5 +1,11 @@
 
-var List2Markup = require("./list2markup.js");
+(function(exports){
+
+var List2Markup;
+if(typeof module !== 'undefined'){
+    List2Markup = require("./list2markup.js"); }
+else{
+    List2Markup = window.List2Markup; }
 
 // TODO
 //   move macros to List2Markup module
@@ -42,23 +48,47 @@ function test(){
     var namelist_template = [
         [css, 
           ['body',
+            ['background', [get, 'bg']],
             'font-family: sans-serif; ',
             ['max-width', '480px'],
+            ['margin-left', 'auto'],
+            ['margin-right', 'auto']],
+          ['#main', ['position', 'relative']],
+          ['#main .namelist',
+            ['border-radius', function(data){
+                return data.border_radius + "px"; }],
+            ['width', '100%'],
+            ['background', '#ffffff'],
             ['margin-left', 'auto'],
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
             ['background-color', [get, 'titlebg']],
-            ['border-radius', function(){ return '20px'; }],
+            ['border-radius', function(data){
+                return data.border_radius + "px"; }],
             ['padding', '50px 100px'],
-            ['width', '100%'],
-            ['margin', '10px']],
+            //['width', '100%'],
+            ['margin', '10px 0px']],
           ['tr:nth-child(even)',
             ['background', '#cccccc']],
+          ['.firstname',
+            ['text-align', 'center'],
+            ['font-style', 'italic']],
+          ['.lastname',
+            ['text-align', 'center'],
+            ['font-weight', 'bold']],
+          ['th',
+            ['font-size', '140%'],
+            ['padding', '5px'],
+            ['color', 'white'],
+            ['background', '#444'],
+            ['border-radius', function(data){
+                return data.border_radius + 'px'; }]],
+          'td{ padding:5px 15px; }',
         ],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
-          ['table.nametable',
+          ['table.namelist',
             ['tr', ['th', 'First Name'],
                    ['th', 'Last Name']],
             [foreach, 'namelist',
@@ -66,20 +96,26 @@ function test(){
                      ['td.lastname', [get, 1]]]]]]
     ]
  
-    var physics_names = {
-       title: "Physicist Names!",
+    var physics_names_data = {
+       title: "Physicist Names",
+       bg: "black",
        titlebg: "red",
+       border_radius: '10',
        namelist: [
          ['Isaac', 'Newton'],
+         ['Marie', 'Curie'],
          ['Albert', 'Einstein'],
-         ['Richard', 'Feynman'],
          ['Neils', 'Bohr'],
+         ['Richard', 'Feynman'],
        ]
     }
 
-    var html = List2Markup.toHtml( namelist_template,physics_names);
+    var html = List2Markup.toHtml( namelist_template,physics_names_data);
     console.log(html);
+    return html;
 }
 
-test();
+exports.test_example = test();
+
+})(typeof exports === 'undefined'? this['List2MarkupTest']={}: exports);
 
