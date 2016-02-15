@@ -16,29 +16,6 @@ else{
 // foreach -- iterate over data.
 // usage: 
 //   [foreach, listgetter, entrytemplate]
-/*
-function foreach( l,data,list2markup){
-    var result_parts = [];
-    var listgetter = l[1];
-    var template = l[2];
-    var datalist = data;
-    if(typeof listgetter == "function"){
-        datalist = listgetter(data); }
-    else if(typeof listgetter == "string"){
-        datalist = data[listgetter]; }
-    for(var i=0; i<datalist.length; ++i){
-        var item = datalist[i];
-        result_parts.push(list2markup(template, item)); }
-    return result_parts.join(''); }
-
-function get( l,data,list2markup){
-    return data[l[1]]; }
-            
-//TODO
-function css( l,data,list2markup){
-}
-*/
-
 
 function test(){
     var css = List2Markup.macros.css;
