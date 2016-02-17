@@ -11,6 +11,7 @@ function test(){
     var css = List2Markup.macros.css;
     var foreach = List2Markup.macros.foreach;
     var get = List2Markup.macros.get;
+    var _with = List2Markup.macros._with;
 
     var namelist_template = [
         [css, 
@@ -57,6 +58,10 @@ function test(){
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
+            [_with, 'namelist',
+              [foreach,
+                ['tr', ['td.lastname', [get, 1]],
+                       ['td.firstname', [get, 0]]]]],
             [foreach, 'namelist',
               ['tr', ['td.lastname', [get, 1]],
                      ['td.firstname', [get, 0]]]]]]

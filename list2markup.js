@@ -108,24 +108,52 @@
   exports.customMarkupConverter = customMarkupConverter;
   exports.toHtml = customMarkupConverter(htmlTagHandler);
   exports.macros = {
-      foreach: function foreach( l,data,list2markup){
+      _with: function( l,data,markupConverter){
+          result_parts = [];
+          if(l.length < 3){
+              throw "List2Markup.macros._with not enough list arguments"; }
+          var context = l[1];
+          if(!data){
+              throw "List2Markup.macros._with data is not defined"; }
+          if(typeof context == "function"){
+              data = context(data); }
+          else if(typeof context == "string" || typeof context == "number"){
+              data = data[context]; }
+          else{
+              throw "List2Markup.macros._with invalid type for context argument;" }
+          for(var i=2; i<l.length; ++i){
+              result_parts.push(markupConverter( l[i],data,markupConverter)); }
+          return result_parts.join("");
+      },
+      foreach: function( l,data,markupConverter){
           var result_parts = [];
-          var listgetter = l[1];
-          var template = l[2];
-          var datalist = data;
-          if(l.length != 3){
-              throw "List2Markup.macros.foreach expects 2 arguments"; }
-          if(typeof listgetter == "function"){
-              datalist = listgetter(data); }
-          else if(typeof listgetter == "string"){
-              datalist = data[listgetter]; }
+          var datalist;
+          var template;
+          if(l.length == 2){
+              datalist = data;
+              template = l[1]; }
+          else if(l.length == 3){
+              var listgetter = l[1];
+              template = l[2];
+              if(typeof listgetter == "function"){
+                  datalist = listgetter(data); }
+              else if(typeof listgetter == "string"){
+                  datalist = data[listgetter]; }}
+          else{
+              throw "List2Markup.macros.foreach invalid number list of arguments"; }
+          
           for(var i=0; i<datalist.length; ++i){
               var item = datalist[i];
-              result_parts.push(list2markup(template, item)); }
+              result_parts.push(markupConverter(template, item)); }
           return result_parts.join(''); },
-      get: function( l,data,list2markup){
-          return data[l[1]]; },
-      css: function( l,data,list2markup){
+      get: function( l,data,markupConverter){
+          if(l.length == 1){
+              return data; }
+          else if(l.length == 2){
+              return data[l[1]]; }
+          else{
+              throw "List2Markup.macros.get invalid number of list arguments"; }},
+      css: function( l,data,markupConverter){
           var result_parts = ['<style>'];
           for(var i=1; i<l.length; ++i){
               handleEntry(l[i]); }
@@ -143,7 +171,7 @@
               else if(Array.isArray(rule)){
                   var first = rule[0];
                   if(typeof first == "function"){
-                      return handleRule(first( rule,data,list2markup)); }
+                      return handleRule(first( rule,data,markupConverter)); }
                   if(typeof first == "string"){
                       if(rule.length != 2){
                           throw "List2Markup.macros.css: css rule must have 2 entries, property and value"; }
@@ -152,7 +180,7 @@
                       if(Array.isArray(value)){
                           if(typeof value[0] != 'function'){
                               throw "List2Markup.macros.css: if css rule value is list, it must be a macro call."; }
-                          var newvalue = value[0]( value,data,list2markup);
+                          var newvalue = value[0]( value,data,markupConverter);
                           var newrule = [property, newvalue];
                           return handleRule(newrule); }
                       if(typeof value == "function"){
@@ -174,7 +202,7 @@
               else if(Array.isArray(entry)){
                   var first = entry[0];
                   if(typeof first == "function"){
-                      return handleEntry(first( entry,data,list2markup)); }
+                      return handleEntry(first( entry,data,markupConverter)); }
                   if(typeof first == "string"){
                       var selector = first;
                       result_parts.push(selector + "{");
@@ -203,7 +231,7 @@
           if(typeof first == "function"){
               // first is a macro
               var macro = first;
-              var macro_result = macro(l, data, markupConverter);
+              var macro_result = macro( l,data,markupConverter);
               if(typeof macro_result == "string"){
                   return macro_result; }
               else if(Array.isArray(macro_result)){
