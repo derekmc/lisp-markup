@@ -12,6 +12,7 @@ function test(){
     var foreach = List2Markup.macros.foreach;
     var get = List2Markup.macros.get;
     var _with = List2Markup.macros._with;
+    var comment = List2Markup.macros.comment;
 
     var namelist_template = [
         [css, 
@@ -53,6 +54,7 @@ function test(){
             ['padding', '5px']],
           'td{ padding:5px 15px; }',
         ],
+        [comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.namelist',
@@ -60,8 +62,8 @@ function test(){
                    ['th', 'First Name']],
             [_with, 'namelist',
               [foreach,
-                ['tr', ['td.lastname', [get, 1]],
-                       ['td.firstname', [get, 0]]]]],
+                ['tr', ['td.lastname', [_with, 1, [get]]],
+                       ['td.firstname', [_with, 0, [get]]]]]],
             [foreach, 'namelist',
               ['tr', ['td.lastname', [get, 1]],
                      ['td.firstname', [get, 0]]]]]]

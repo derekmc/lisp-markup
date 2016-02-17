@@ -109,7 +109,7 @@
   exports.toHtml = customMarkupConverter(htmlTagHandler);
   exports.macros = {
       _with: function( l,data,markupConverter){
-          result_parts = [];
+          var result_parts = [];
           if(l.length < 3){
               throw "List2Markup.macros._with not enough list arguments"; }
           var context = l[1];
@@ -125,9 +125,11 @@
               result_parts.push(markupConverter( l[i],data,markupConverter)); }
           return result_parts.join("");
       },
+      comment: function( l,data,markupConverter){
+          return ""; },
       foreach: function( l,data,markupConverter){
           var result_parts = [];
-          var datalist;
+          var datalist = [];
           var template;
           if(l.length == 2){
               datalist = data;
