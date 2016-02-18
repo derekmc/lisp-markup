@@ -8,16 +8,12 @@ else{
     List2Markup = window.List2Markup; }
 
 function test(){
-    var css = List2Markup.macros.css;
-    var foreach = List2Markup.macros.foreach;
-    var get = List2Markup.macros.get;
-    var _with = List2Markup.macros._with;
-    var comment = List2Markup.macros.comment;
+    var macros = List2Markup.macros;
 
     var namelist_template = [
-        [css, 
+        [macros.css, 
           ['body',
-            ['background', [get, 'bg']],
+            ['background', [macros.get, 'bg']],
             'font-family: sans-serif; ',
             ['max-width', '480px'],
             ['margin-left', 'auto'],
@@ -31,9 +27,9 @@ function test(){
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
-            ['background-color', [get, 'titlebg']],
-            ['border-radius', function(data){
-                return data.border_radius + "px"; }],
+            ['background-color', [macros.get, 'titlebg']],
+            ['border-radius', [macros.concat, [macros.get, 'border_radius'], 'px']],//function(data){
+                //return data.border_radius + "px"; }],
             ['padding', '50px 100px'],
             //['width', '100%'],
             ['margin', '4px 0px']],
@@ -54,19 +50,19 @@ function test(){
             ['padding', '5px']],
           'td{ padding:5px 15px; }',
         ],
-        [comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
+        [macros.comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
-            [_with, 'namelist',
-              [foreach,
-                ['tr', ['td.lastname', [_with, 1, [get]]],
-                       ['td.firstname', [_with, 0, [get]]]]]],
-            [foreach, 'namelist',
-              ['tr', ['td.lastname', [get, 1]],
-                     ['td.firstname', [get, 0]]]]]]
+            [macros._with, 'namelist',
+              [macros.foreach,
+                ['tr', ['td.lastname', [macros._with, 1, [macros.get]]],
+                       ['td.firstname', [macros._with, 0, [macros.get]]]]]],
+            [macros.foreach, 'namelist',
+              ['tr', ['td.lastname', [macros.get, 1]],
+                     ['td.firstname', [macros.get, 0]]]]]]
     ]
  
     var physics_names_data = {

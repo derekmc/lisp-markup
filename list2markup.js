@@ -146,7 +146,12 @@
           
           for(var i=0; i<datalist.length; ++i){
               var item = datalist[i];
-              result_parts.push(markupConverter(template, item)); }
+              result_parts.push(markupConverter( template,item)); }
+          return result_parts.join(''); },
+      concat: function( l,data,markupConverter){
+          var result_parts = [''];
+          for(var i=1; i<l.length; ++i){
+              result_parts.push(markupConverter( l[i],data)); }
           return result_parts.join(''); },
       get: function( l,data,markupConverter){
           if(l.length == 1){
@@ -225,11 +230,15 @@
       
       return markupConverter;
       function markupConverter(l, data){
-          T(l, []);
+          T(l, [], "", 0);
           T(data, {}, [], undefined);
           var props = {},
               first = l[0],
               result_parts = [''];  //save space for opening tag
+          if(l === null || l === undefined){
+              return ""; }
+          if(typeof l == "string" || typeof l == "number"){
+              return l.toString(); }
           if(typeof first == "function"){
               // first is a macro
               var macro = first;
