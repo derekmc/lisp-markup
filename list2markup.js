@@ -158,6 +158,12 @@
               return data; }
           else if(l.length == 2){
               return data[l[1]]; }
+          else if(l.length == 3){
+              var value = data[l[1]];
+              if(value === null || value === undefined){
+                  // compute default value
+                  value = markupConverter(l[2],data,markupConverter); }
+              return value; }
           else{
               throw "List2Markup.macros.get invalid number of list arguments"; }},
       css: function( l,data,markupConverter){

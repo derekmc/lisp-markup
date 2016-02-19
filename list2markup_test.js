@@ -8,12 +8,12 @@ else{
     List2Markup = window.List2Markup; }
 
 function test(){
-    var macros = List2Markup.macros;
+    var m = List2Markup.macros;
 
     var namelist_template = [
-        [macros.css, 
+        [m.css, 
           ['body',
-            ['background', [macros.get, 'bg']],
+            ['background', [m.get, 'bg']],
             'font-family: sans-serif; ',
             ['max-width', '480px'],
             ['margin-left', 'auto'],
@@ -27,8 +27,8 @@ function test(){
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
-            ['background-color', [macros.get, 'titlebg']],
-            ['border-radius', [macros.concat, [macros.get, 'border_radius'], 'px']],//function(data){
+            ['background-color', [m.get, 'this_is_a_fake_property', [m.get, 'titlebg']]],
+            ['border-radius', [m.concat, [m.get, 'border_radius'], 'px']],//function(data){
                 //return data.border_radius + "px"; }],
             ['padding', '50px 100px'],
             //['width', '100%'],
@@ -50,19 +50,19 @@ function test(){
             ['padding', '5px']],
           'td{ padding:5px 15px; }',
         ],
-        [macros.comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
+        [m.comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
-            [macros._with, 'namelist',
-              [macros.foreach,
-                ['tr', ['td.lastname', [macros._with, 1, [macros.get]]],
-                       ['td.firstname', [macros._with, 0, [macros.get]]]]]],
-            [macros.foreach, 'namelist',
-              ['tr', ['td.lastname', [macros.get, 1]],
-                     ['td.firstname', [macros.get, 0]]]]]]
+            [m._with, 'namelist',
+              [m.foreach,
+                ['tr', ['td.lastname', [m._with, 1, [m.get]]],
+                       ['td.firstname', [m._with, 0, [m.get]]]]]],
+            [m.foreach, 'namelist',
+              ['tr', ['td.lastname', [m.get, 1]],
+                     ['td.firstname', [m.get, 0]]]]]]
     ]
  
     var physics_names_data = {
