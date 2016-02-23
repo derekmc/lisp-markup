@@ -19,7 +19,7 @@
  *   l: the lisp-like list datastructure to be converted to markup.
  *     entries in l are handled accoring to the type of the entry:
  *       - lists within this list are evaluated recursively like in lisp.
- *       - objects are property sets which are added to current node in the markup.
+ *       - objects are property sets which are added to current node in the markup. TODO allow using templates and macros to fill object properties.
  *       - a function in the first position of a list is a macro.
  *       - a function in a non-first position is a template function.
  *       - templates in l are called with the data parameter.
@@ -234,7 +234,9 @@
       if(typeof taghandler != "function"){
           throw "List2Markup markup conversion function: taghandler argument must be a function"; }
       
-      return markupConverter;
+      // TODO make sure the right 'markupConverter' closure with access to the proper taghandler is used for all recursive calls.
+      // Some test cases would be nice.
+      return markupConverter;  
       function markupConverter(l, data){
           T(l, [], "", 0);
           T(data, {}, [], undefined);
