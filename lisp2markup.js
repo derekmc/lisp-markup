@@ -1,9 +1,9 @@
 
 /*
- * List2Markup: turn a lisp-style list datastructure into markup such as html. 
+ * Lisp2Markup: a lisp based template language for markup with a focus on macros.
  * 
- * Lisp2Markup has built in conversion functions and you may create your own conversion
- * functions by providing a taghandler.
+ * Lisp2Markup has built in markup conversion functions and you may create your own conversion
+ * functions by providing a taghandler.  The markup conversion
  *
  * Built-In Conversions:
  *    toHtml: convert to html.
@@ -12,21 +12,24 @@
  *
  * customMarkupConverter(taghandler):
  *   creates a custom markup conversion function using the provided taghandler function.
+ * 
+ * taghandler( tag_str,properties):
+ *   returns [opentag_str, closetag_str]
  *
  * All markup conversion functions follow the following calling pattern.
  *
  * markupConverter( l,data):
- *   l: the lisp-like list datastructure to be converted to markup.
+ *   l: the template, whether a lisp string or a list datastructure, to be converted to markup.
  *     entries in l are handled accoring to the type of the entry:
  *       - lists within this list are evaluated recursively like in lisp.
  *       - objects are property sets which are added to current node in the markup. TODO allow using templates and macros to fill object properties.
  *       - a function in the first position of a list is a macro.
- *       - a function in a non-first position is a template function.
- *       - templates in l are called with the data parameter.
- *          template( data);
- *          templates must return a string.
- *       - macros in l are called with the following parameters:
- *          macro( l,data,markupConverter);
+ *       - a function in a non-first position is a view function.
+ *       - views in l are called with the data parameter.
+ *          view( data);
+ *          views must return a string.
+ *       - macros in the template are called with the following parameters:
+ *          macro( template,data,markupConverter);
  *            - l: the current list this macro is applied to,
  *                 which will include the macro itself in the first position.
  *            - data: for templating, this is the same parameter that is passed to markupCoverter( l,data), see more below.
@@ -40,7 +43,7 @@
  *   data:
  *     this parameter allows your list datastructure to be used as a template.
  *     the values in the final markup are filled in with the data values from this list.
- *     Both template and macro functions within l are passed this parameter as described above.
+ *     Both tranformation and macro functions within l are passed this parameter as described above.
  */ 
 
 
@@ -56,6 +59,9 @@
    * returns [opentag, closetag]
    */
   exports.htmlTagHandler = htmlTagHandler;
+  
+  // uses a shorthand language for element tagname, id, and (css) classes:
+  //   tagname#id.class1.class2
   function htmlTagHandler(tagstr, props){
       T(tagstr, "");
       T(props, {}, undefined);
@@ -111,42 +117,47 @@
       _with: function( l,data,markupConverter){
           var result_parts = [];
           if(l.length < 3){
-              throw "List2Markup.macros._with not enough list arguments"; }
+              throw "Lisp2Markup.macros._with not enough list arguments"; }
           var context = l[1];
           if(!data){
-              throw "List2Markup.macros._with data is not defined"; }
+              throw "Lisp2Markup.macros._with data is not defined"; }
           if(typeof context == "function"){
               data = context(data); }
           else if(typeof context == "string" || typeof context == "number"){
               data = data[context]; }
           else{
-              throw "List2Markup.macros._with invalid type for context argument;" }
+              throw "Lisp2Markup.macros._with invalid type for context argument;" }
           for(var i=2; i<l.length; ++i){
               result_parts.push(markupConverter( l[i],data,markupConverter)); }
           return result_parts.join("");
       },
       comment: function( l,data,markupConverter){
           return ""; },
+
+      // 
+      // (foreach l) iterates over the current context in the data, using template 'l' on each item.
+      // (foreach prop_name l) iterates over the data property at prop_name, using template 'l' on each item.
+      // (foreach function(data){} l) iterates over the list returned by function, using template 'l' on each item.
       foreach: function( l,data,markupConverter){
           var result_parts = [];
           var datalist = [];
-          var template;
+          var _l;
           if(l.length == 2){
               datalist = data;
-              template = l[1]; }
+              _l = l[1]; }
           else if(l.length == 3){
               var listgetter = l[1];
-              template = l[2];
+              _l = l[2];
               if(typeof listgetter == "function"){
                   datalist = listgetter(data); }
               else if(typeof listgetter == "string"){
                   datalist = data[listgetter]; }}
           else{
-              throw "List2Markup.macros.foreach invalid number list of arguments"; }
+              throw "Lisp2Markup.macros.foreach invalid number list of arguments"; }
           
           for(var i=0; i<datalist.length; ++i){
               var item = datalist[i];
-              result_parts.push(markupConverter( template,item)); }
+              result_parts.push(markupConverter( _l,item)); }
           return result_parts.join(''); },
       concat: function( l,data,markupConverter){
           var result_parts = [''];
@@ -165,7 +176,7 @@
                   value = markupConverter(l[2],data,markupConverter); }
               return value; }
           else{
-              throw "List2Markup.macros.get invalid number of list arguments"; }},
+              throw "Lisp2Markup.macros.get invalid number of list arguments"; }},
       css: function( l,data,markupConverter){
           var result_parts = ['<style>'];
           for(var i=1; i<l.length; ++i){
@@ -177,7 +188,7 @@
               if(typeof rule == "function"){
                   rule = rule(data); 
                   if(typeof rule != "string"){
-                       throw "List2Markup.macros.css: template function for css rule did not return a string value."; }
+                       throw "Lisp2Markup.macros.css: tranform function for css rule did not return a string value."; }
                   result_parts.push(rule); }
               else if(typeof rule == "string"){
                   result_parts.push(rule); }
@@ -187,22 +198,22 @@
                       return handleRule(first( rule,data,markupConverter)); }
                   if(typeof first == "string"){
                       if(rule.length != 2){
-                          throw "List2Markup.macros.css: css rule must have 2 entries, property and value"; }
+                          throw "Lisp2Markup.macros.css: css rule must have 2 entries, property and value"; }
                       var property = first;
                       var value = rule[1];
                       if(Array.isArray(value)){
                           if(typeof value[0] != 'function'){
-                              throw "List2Markup.macros.css: if css rule value is list, it must be a macro call."; }
+                              throw "Lisp2Markup.macros.css: if css rule value is list, it must be a macro call."; }
                           var newvalue = value[0]( value,data,markupConverter);
                           var newrule = [property, newvalue];
                           return handleRule(newrule); }
                       if(typeof value == "function"){
                           value = value(data); }
                       if(typeof value != "string"){
-                          throw "List2Markup.macros.css: css rule value not a string, macro call, or template returning a string."; }
+                          throw "Lisp2Markup.macros.css: css rule value not a string, macro call, or view returning a string."; }
                       result_parts.push(property + ": "  + value + "; "); }
                   else{
-                      throw "List2Markup.macros.css: css rule property not a string"; }}
+                      throw "Lisp2Markup.macros.css: css rule property not a string"; }}
           }
           function handleEntry(entry){
               if(typeof entry == "string"){
@@ -210,7 +221,7 @@
               else if(typeof entry == "function"){
                   entry = entry(data);
                   if(typeof entry != "string"){
-                      throw "List2Markup.macros.css: css entry template did not return a string" }
+                      throw "Lisp2Markup.macros.css: css entry view did not return a string" }
                   result_parts.push(entry); }
               else if(Array.isArray(entry)){
                   var first = entry[0];
@@ -224,15 +235,15 @@
                           handleRule(rule); }
                       result_parts.push("}"); }
                   else{
-                      throw "List2Markup.macros.css: invalid selector type"; }}
+                      throw "Lisp2Markup.macros.css: invalid selector type"; }}
               else{
-                  throw "List2Markup.macros.css: invalid entry type"; }}},
+                  throw "Lisp2Markup.macros.css: invalid entry type"; }}},
               
   }
 
   function customMarkupConverter(taghandler){
       if(typeof taghandler != "function"){
-          throw "List2Markup markup conversion function: taghandler argument must be a function"; }
+          throw "Lisp2Markup markup conversion function: taghandler argument must be a function"; }
       
       // TODO make sure the right 'markupConverter' closure with access to the proper taghandler is used for all recursive calls.
       // Some test cases would be nice.
@@ -256,12 +267,12 @@
               else if(Array.isArray(macro_result)){
                   return markupConverter(macro_result, data); }
               else if(typeof macro_result == "object" && macro_result.constructor == ({}).constructor){
-                  throw "List2Markup markup conversion function: TODO implement allowing returning properties from macros.";
+                  throw "Lisp2Markup markup conversion function: TODO implement allowing returning properties from macros.";
               }
               else if(!macro_result){
                   return ""; }
               else{
-                  throw "List2Markup markup conversion function: macro returned value with invalid type."; }
+                  throw "Lisp2Markup markup conversion function: macro returned value with invalid type."; }
               // returned
           }
 
@@ -278,15 +289,15 @@
                   for(var k in x){
                       props[k] = x[k]; }}
               else if(typeof x == "function"){
-                  // template function
-                  var template = x;
-                  var template_result = template(data);
-                  if(typeof template_result == "string"){
-                      result_parts.push(template_result); }
-                  else if(!template_result){
+                  // view function
+                  var view = x;
+                  var view_result = view(data);
+                  if(typeof view_result == "string"){
+                      result_parts.push(view_result); }
+                  else if(!view_result){
                       result_parts.push(""); }
                   else{
-                      throw "List2Markup markup conversion function: template returned value with invalid type."; }}
+                      throw "Lisp2Markup markup conversion function: template returned value with invalid type."; }}
               else{
                    if(x) result_parts.push(x.toString()); }
           }
@@ -297,4 +308,4 @@
           return result_parts.join('');
       }
   }
-})(typeof exports === 'undefined'? this['List2Markup']={}: exports);
+})(typeof exports === 'undefined'? this['Lisp2Markup']={}: exports);

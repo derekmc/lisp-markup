@@ -1,7 +1,7 @@
 {
   "name": "lisp2markup",
   "version": "0.0.0",
-  "description": "A lisp based markup template language with a focus on macros.",
+  "description": "A lisp based template language for markup with a focus on macros.",
   "main": "lisp2markup.js",
   "scripts": {
     "test": "node lisp2markup_test.js"

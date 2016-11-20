@@ -1,14 +1,14 @@
 
 (function(exports){
 
-var List2Markup;
+var Lisp2Markup;
 if(typeof module !== 'undefined'){
-    List2Markup = require("./list2markup.js"); }
+    Lisp2Markup = require("./lisp2markup.js"); }
 else{
-    List2Markup = window.List2Markup; }
+    Lisp2Markup = window.Lisp2Markup; }
 
 function test(){
-    var m = List2Markup.macros;
+    var m = Lisp2Markup.macros;
 
     var namelist_template = [
         [m.css, 
@@ -79,12 +79,12 @@ function test(){
        ]
     }
 
-    var html = List2Markup.toHtml( namelist_template,physics_names_data);
+    var html = Lisp2Markup.toHtml( namelist_template,physics_names_data);
     console.log(html);
     return html;
 }
 
 exports.test_example = test();
 
-})(typeof exports === 'undefined'? this['List2MarkupTest']={}: exports);
+})(typeof exports === 'undefined'? this['Lisp2MarkupTest']={}: exports);
 
