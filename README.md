@@ -9,10 +9,10 @@ Lisp2Markup is a markup templating tool written in javascript.
 
 The two most notable features of List2Markup are its use of the lisp mentality of code as data,
 and a macro system that takes advantage of this to facilitate powerful and intuitive template macros written in javascript.
- * __Lisp mentality:__ Code as data.
+ * __Lisp Mentality:__ Code as data.
    * Lisp2Markup allows you to use a javascript string in lisp syntax as your template, or build your template programmatically using javascript lists.
    * When javascript lists are used, templates may be written as JSON datastructures.  Templates written this way still closely resemble lisp code.
- * __Lisp-like macros:__
+ * __Lisp-Like Macros:__
    * Lisp, in my opinion, has the best macro system of any programming language.
      The fact that all code is a data facilitates this.
    * Lisp2Markup takes advantage of this approach to macros, but without including the lisp programming language itself, only it's syntax and "code as data" mentality.
