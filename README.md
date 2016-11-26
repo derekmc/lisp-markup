@@ -15,7 +15,7 @@ and a macro system that takes advantage of this to facilitate powerful and intui
  * __Lisp-Like Macros:__
    * Lisp, in my opinion, has the best macro system of any programming language.
      The fact that all code is a data facilitates this.
-   * Lisp2Markup takes advantage of this approach to macros, but without including the lisp programming language itself, only it's syntax and "code as data" mentality.
+   * Lisp2Markup takes advantage of this approach to macros, but without including the lisp programming language itself, only it's syntax and "code as data" approach.
    * Macros are written in javascript and have access to the portion of the template they are applied on as a javascript datastructure.
    * Macros also have access to the data being used by the template for the conversion, and the original markup conversion function.
      
