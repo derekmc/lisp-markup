@@ -5,7 +5,7 @@
 
 ## Overview
 
-Lisp2Markup is a lisp-like templating tool for javascript that outputs markup.
+Lisp2Markup is a lisp-like templating tool for javascript that outputs markup such as html.
 
 The two most notable features of List2Markup are its use of the lisp mentality of code as data,
 and a macro system that takes advantage of this to facilitate powerful and intuitive template macros written in javascript.
