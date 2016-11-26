@@ -69,15 +69,14 @@ All markup conversion functions follow the following calling pattern.
                 which will include the macro itself in the first position.
            - data: for templating, this is the same parameter that is passed to markupCoverter( l,data), see more below.
            - markupConverter: macros are provided the current markupConverter function so they can do more magic.
-
            * The macro's return value is used in place of the original list with the macro.
            * If it returns a string, that string is inserted into the markup.
            * If it returns a list, the list is evaluated by the markupConverter
            * If it returns an object, the properties are added to the current node in the markup.
            * It may not return a function. 
- * data:
-   * this parameter allows your list datastructure to be used as a template.
-   * the values in the final markup are filled in with the data values from this list.
-   * Both tranformation and macro functions within l are passed this parameter as described above.
+  * data:
+    * this parameter allows your list datastructure to be used as a template.
+    * the values in the final markup are filled in with the data values from this list.
+    * Both tranformation and macro functions within l are passed this parameter as described above.
  
 
