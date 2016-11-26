@@ -33,18 +33,20 @@ functions for other markup languages by providing a taghandler.
 
 ### Custom Markup Conversion
 
-To make a custom markup conversion function, use the following function.
+To make a custom markup conversion function, you must write a tag handler.
+The tag handler accepts the tagname and a set of properties,
+and returns a tuple containing the opening and closing tag strings.
 
-    var converter = customMarkupConverter(taghandler);
-
-This creates a custom markup conversion function using the provided taghandler function.
-
-    function taghandler( tagstr,properties){
+    function taghandler( tagname,properties){
         var open_tag_str = /* do stuff */;
         var close_tag_str = /* do stuff*/;
 
         return [open_tag_str, close_tag_str];
     }
+    
+You can then generate your markup conversion from the taghandler: 
+
+    var converter = customMarkupConverter(taghandler);
 
 
 All markup conversion functions follow the following calling pattern.
@@ -52,7 +54,7 @@ All markup conversion functions follow the following calling pattern.
     markupConverter( l,data):
 
 
-  * l: the template, whether a lisp string(TODO) or a javascript list datastructure, to be converted to markup.
+  * l: the template, whether a lisp string(TODO) or a javascript datastructure, to be converted to markup.
     * entries in l are handled accoring to the type of the entry:
       - lists within this list are evaluated recursively like in lisp.
       - objects are property sets which are added to current node in the markup. TODO allow using templates and macros to fill object properties.
