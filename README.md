@@ -24,8 +24,8 @@ You can use the provided macro functions or write your own.
 
 ## Built-In and Custom Markup Conversions
 
-Lisp2Markup has built in markup conversion functions and you may create your own conversion
-functions by providing a taghandler.
+Lisp2Markup has built in markup conversion function for html and you may create your own conversion
+functions for other markup languages by providing a taghandler.
 
 ### Built-In Markup Conversions Available
 
