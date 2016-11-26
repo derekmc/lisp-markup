@@ -54,7 +54,7 @@ All markup conversion functions follow the following calling pattern.
     markupConverter( l,data):
 
 
-  * l: the template, whether a lisp string(TODO) or a javascript datastructure, to be converted to markup.
+  * l: the template, whether a string in lisp syntax(TODO) or a javascript datastructure, to be converted to markup.
     * entries in l are handled accoring to the type of the entry:
       - lists within this list are evaluated recursively like in lisp.
       - objects are property sets which are added to current node in the markup. TODO allow using templates and macros to fill object properties.
