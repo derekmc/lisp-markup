@@ -6,6 +6,7 @@ if(typeof module !== 'undefined'){
     Lisp2Markup = require("./lisp2markup.js"); }
 else{
     Lisp2Markup = window.Lisp2Markup; }
+exports.test_example = test();
 
 function test(){
     var m = Lisp2Markup.macros;
@@ -57,14 +58,20 @@ function test(){
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
             [m._with, 'namelist',
-              [m.foreach,
+              ['FOREACH',
                 ['tr', ['td.lastname', [m._with, 1, [m.get]]],
                        ['td.firstname', [m._with, 0, [m.get]]]]]],
-            [m.foreach, 'namelist',
-              ['tr', ['td.lastname', [m.get, 1]],
-                     ['td.firstname', [m.get, 0]]]]]]
+            ['FOREACH', 'namelist',
+              ['tr', ['td.lastname', ['GET', 1]],
+                     ['td.firstname', ['GET', 0]]]]]]
     ]
  
+    var lisp_template = '(#main (h1.maintitle (GET title))' +
+                        '       (table.namelist' +
+                        '         (tr (th Last Name) (th First Name))' +
+                        '         (tr (th NameList) (td (STRINGIFY namelist)))' +
+                        '         (WITH namelist' +
+                        '           (FOREACH (tr (td.lastname (GET 1)) (td.firstname (GET 0)))))))';
     var physics_names_data = {
        title: "Physicist Names",
        bg: "black",
@@ -79,12 +86,15 @@ function test(){
        ]
     }
 
-    var html = Lisp2Markup.toHtml( namelist_template,physics_names_data);
+    //var html = Lisp2Markup.toHtml( namelist_template,physics_names_data);
+    //var tree = Lisp2Markup.lispTree(lisp_template);
+    //console.log(JSON.stringify(tree));
+    var html = Lisp2Markup.toHtml(lisp_template, physics_names_data);
+
     console.log(html);
     return html;
 }
 
-exports.test_example = test();
 
 })(typeof exports === 'undefined'? this['Lisp2MarkupTest']={}: exports);
 
