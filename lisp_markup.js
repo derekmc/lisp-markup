@@ -1,8 +1,8 @@
 
 /*
- * Lisp2Markup: a lisp based template language for markup with a focus on macros.
+ * LispMarkup: a lisp based template language for markup with a focus on macros.
  * 
- * Lisp2Markup has built in markup conversion functions and you may create your own conversion
+ * LispMarkup has built in markup conversion functions and you may create your own conversion
  * functions by providing a taghandler.  The markup conversion
  *
  * Built-In Conversions:
@@ -75,7 +75,7 @@
 
     function addMacro(macro_name, macro_func){
         if(macros.hasOwnProperty(macro_name)){
-            throw new Error("Lisp2Markup.addMacro: macro '" + macro_name + "' already exists."); }
+            throw new Error("LispMarkup.addMacro: macro '" + macro_name + "' already exists."); }
         macros[macro_name] = macro_func;
         exports.macros[macro_name] = macro_func;
     }
@@ -87,7 +87,7 @@
         if(typeof template == "string"){
             template = lispTree(template); }
         if(!Array.isArray(template)){
-            throw new Error("Lisp2Markup.compileTemplate: Template must be a lisp tree."); }
+            throw new Error("LispMarkup.compileTemplate: Template must be a lisp tree."); }
         //console.log(JSON.stringify(template));
         var converter;
         if(taghandler){
@@ -209,7 +209,7 @@
     
     function customTagMarkupConverter(taghandler){
         if(typeof taghandler != "function"){
-            throw "Lisp2Markup markup conversion function: taghandler argument must be a function"; }
+            throw "LispMarkup markup conversion function: taghandler argument must be a function"; }
         
         // TODO make sure the right 'markupConverter' closure, with access to the proper taghandler is used for all recursive calls.
         // Some test cases would be nice.
@@ -246,12 +246,12 @@
                         else if(typeof property_value == 'string' || typeof property_value == 'number'){
                             props[k] = property_value; }
                         else{
-                            throw new Error("Lisp2Markup: illegal property value type."); }}
+                            throw new Error("LispMarkup: illegal property value type."); }}
                 }
                 else if(!macro_result){
                     return ""; }
                 else{
-                    throw "Lisp2Markup markup conversion function: macro returned value with invalid type."; }
+                    throw "LispMarkup markup conversion function: macro returned value with invalid type."; }
                 // returned
             }
 
@@ -268,7 +268,7 @@
                         else if(typeof property_value == 'string' || typeof property_value == 'number'){
                             props[k] = property_value; }
                         else{
-                            throw new Error("Lisp2Markup: illegal property value type."); }}}
+                            throw new Error("LispMarkup: illegal property value type."); }}}
                 else if(typeof x == "function"){
                     // view function
                     var view = x;
@@ -278,7 +278,7 @@
                     else if(!view_result){
                         result_parts.push(""); }
                     else{
-                        throw "Lisp2Markup markup conversion function: template returned value with invalid type."; }}
+                        throw "LispMarkup markup conversion function: template returned value with invalid type."; }}
                 else{
                      if(x) result_parts.push(x.toString() + " "); }
             }
@@ -289,4 +289,4 @@
             return result_parts.join('');
         }
     }
-})(typeof exports === 'undefined'? this['Lisp2Markup']={}: exports);
+})(typeof exports === 'undefined'? this['LispMarkup']={}: exports);
