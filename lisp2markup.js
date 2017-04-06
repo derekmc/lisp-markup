@@ -10,7 +10,7 @@
  *
  * To make a custom markup conversion function, use the following function.
  *
- * customMarkupConverter(taghandler):
+ * customTagMarkupConverter(taghandler):
  *   creates a custom markup conversion function using the provided taghandler function.
  * 
  * taghandler( tag_str,properties):
@@ -51,7 +51,7 @@
     // TODO use real typecheck module
     function T(){}
 
-    var treeToHtml = customMarkupConverter(htmlTagHandler); 
+    var lispToHtml = customTagMarkupConverter(htmlTagHandler); 
     /* htmlTagHandler: process html tags
      * parses tagname and optionally id and classes
      * id starts with a hash "#"
@@ -61,20 +61,48 @@
      */
 
     exports.htmlTagHandler = htmlTagHandler;
-	exports.lispTree = lispTree;
-    exports.customMarkupConverter = customMarkupConverter;
+    exports.lispTree = lispTree;
+    exports.customTagMarkupConverter = customTagMarkupConverter;
     exports.toHtml = toHtml;
-    var macros = exports.macros = require("./macros.js");
+    exports.compileTemplate = compileTemplate;
+    exports.addMacro = addMacro;
+    exports.hasMacro = hasMacro;
 
-    function toHtml(template, data){
-		if(typeof template == 'string'){
-            return treeToHtml(lispTree(template), data); }
-        else if(Array.isArray(template)){
-			return treeToHtml(template, data); }
+    var macros = require("./macros.js");
+    exports.macros = {};
+    for(var k in macros){ // copy macros for external object, but don't expose original.
+        exports.macros[k] = macros[k]; }
+
+    function addMacro(macro_name, macro_func){
+        if(macros.hasOwnProperty(macro_name)){
+            throw new Error("Lisp2Markup.addMacro: macro '" + macro_name + "' already exists."); }
+        macros[macro_name] = macro_func;
+        exports.macros[macro_name] = macro_func;
     }
-    function treeToHtml(tree){
-        return _treeToHtml(tree);
-	}
+    function hasMacro(macro_name){
+        return macros.hasOwnProperty(macro_name);
+    }
+
+    function compileTemplate(template, taghandler){
+        if(typeof template == "string"){
+            template = lispTree(template); }
+        if(!Array.isArray(template)){
+            throw new Error("Lisp2Markup.compileTemplate: Template must be a lisp tree."); }
+        //console.log(JSON.stringify(template));
+        var converter;
+        if(taghandler){
+            converter = customTagMarkupConverter(taghandler); }
+        else{
+            converter = lispToHtml; }
+        return function(data){
+            return converter(template, data); }
+    }
+    function toHtml(template, data){
+        if(typeof template == 'string'){
+            return lispToHtml(lispTree(template), data); }
+        else if(Array.isArray(template)){
+            return lispToHtml(template, data); }
+    }
     
     // uses a shorthand language for element tagname, id, and (css) classes:
     //   tagname#id.class1.class2
@@ -127,50 +155,59 @@
         return [open, close];
     }
     function lispTree(s){
-		var root = [];
-		var node = root;
-		var next;
-		for(var i=0,j=0; i<s.length; ++i){
-			var c = s[i];
-			if(c == "\\"){
-				if(i==s.length-1){
-					throw new Error("parenTree: '\\' is last character"); }
-				++i; continue; }
-			if(c == "\""){
-			   if(i > j) node.push(s.substring(j,i));
-			   j = i;
-			   while(s[++i] != "\""){
-				   if(i == s.length){
-					   throw new Error("parenTree: unterminated string"); }
-				   if(s[i] == "\\") ++i; }
-			   node.push(s.substring(j+1,i));
-			   j = i+1; }
-			if(c == "("){ //log("("+i+","+j);
-				if(i > j) node.push(s.substring(j,i));
-				node.push(next = []);
-				next.parent = node;
-				node = next;
-				j = i+1; }
-			if(c == ")"){ //log(")"+i+","+j);
-				if(i > j) node.push(s.substring(j,i));
-				if(node == root){
-					throw new Error("parenTree: xtra ')'"); }
-				node = node.parent;
-				j = i+1; }
-			if(c.match(/\s/)){ //log("_"+i+","+j);
-				if(i > j) node.push(s.substring(j,i));
-				while(i<s.length && s[i].match(/\s/)) ++i;
-				j = i;
-				--i;
-			}
-		}
-		if(node != root){
-			throw new Error("parenTree: xtra '('"); }
-		if(i > j) root.push(s.substring(j,i));
-		return root;
+        var root = [];
+        var node = root;
+        var next;
+        for(var i=0,j=0; i<s.length; ++i){
+            var c = s[i];
+            if(c == "\\"){
+                if(i==s.length-1){
+                    throw new Error("parenTree: '\\' is last character"); }
+                ++i; continue; }
+            if(c == "\'"){
+                var standalone = (i==j);
+                while(s[++i] != "\'"){
+                    if(i == s.length){
+                        throw new Error("parenTree: unterminated string"); }
+                    if(s[i] == "\\") ++i; }
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
+                    node.push(s.substring(j+1,i));
+                    j = i+1; }}
+            if(c == "\""){
+                var standalone = (i==j);
+                while(s[++i] != "\""){
+                    if(i == s.length){
+                        throw new Error("parenTree: unterminated string"); }
+                    if(s[i] == "\\") ++i; }
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
+                    node.push(s.substring(j+1,i));
+                    j = i+1; }}
+            if(c == "("){ //log("("+i+","+j);
+                if(i > j) node.push(s.substring(j,i));
+                node.push(next = []);
+                next.parent = node;
+                node = next;
+                j = i+1; }
+            if(c == ")"){ //log(")"+i+","+j);
+                if(i > j) node.push(s.substring(j,i));
+                if(node == root){
+                    throw new Error("parenTree: xtra ')'"); }
+                node = node.parent;
+                j = i+1; }
+            if(c.match(/\s/)){ //log("_"+i+","+j);
+                if(i > j) node.push(s.substring(j,i));
+                while(i<s.length && s[i].match(/\s/)) ++i;
+                j = i;
+                --i;
+            }
+        }
+        if(node != root){
+            throw new Error("parenTree: xtra '('"); }
+        if(i > j) root.push(s.substring(j,i));
+        return root;
     }
     
-    function customMarkupConverter(taghandler){
+    function customTagMarkupConverter(taghandler){
         if(typeof taghandler != "function"){
             throw "Lisp2Markup markup conversion function: taghandler argument must be a function"; }
         
@@ -192,7 +229,7 @@
                 if(macros.hasOwnProperty(first)){
                     first = macros[first]; }
                 else{
-                	tagname = first; }}
+                    tagname = first; }}
             if(typeof first == "function"){
                 // first is a macro
                 var macro = first;

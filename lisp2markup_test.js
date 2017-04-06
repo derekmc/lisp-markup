@@ -89,7 +89,9 @@ function test(){
     //var html = Lisp2Markup.toHtml( namelist_template,physics_names_data);
     //var tree = Lisp2Markup.lispTree(lisp_template);
     //console.log(JSON.stringify(tree));
-    var html = Lisp2Markup.toHtml(lisp_template, physics_names_data);
+    //var html = Lisp2Markup.toHtml(lisp_template, physics_names_data);
+    var template = Lisp2Markup.compileTemplate(lisp_template);
+    var html = template(physics_names_data);
 
     console.log(html);
     return html;
