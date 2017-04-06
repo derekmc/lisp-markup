@@ -239,7 +239,14 @@
                 else if(Array.isArray(macro_result)){
                     return markupConverter(macro_result, data); }
                 else if(typeof macro_result == "object" && macro_result.constructor == ({}).constructor){
-                    throw "Lisp2Markup markup conversion function: TODO implement allowing returning properties from macros.";
+                    for(var k in macro_result){
+                        var property_value = macro_result[k];
+                        if(Array.isArray(property_value)){
+                            props[k] = markupConverter(property_value, data); }
+                        else if(typeof property_value == 'string' || typeof property_value == 'number'){
+                            props[k] = property_value; }
+                        else{
+                            throw new Error("Lisp2Markup: illegal property value type."); }}
                 }
                 else if(!macro_result){
                     return ""; }
@@ -254,8 +261,14 @@
                 if(Array.isArray(x)){
                     result_parts.push(markupConverter(x, data)); }
                 else if(typeof x == "object"){
-                    for(var k in x){
-                        props[k] = x[k]; }}
+                    for(var k in macro_result){
+                        var property_value = macro_result[k];
+                        if(Array.isArray(property_value)){
+                            props[k] = markupConverter(property_value, data); }
+                        else if(typeof property_value == 'string' || typeof property_value == 'number'){
+                            props[k] = property_value; }
+                        else{
+                            throw new Error("Lisp2Markup: illegal property value type."); }}}
                 else if(typeof x == "function"){
                     // view function
                     var view = x;
