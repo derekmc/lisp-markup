@@ -19,10 +19,10 @@
  * All markup conversion functions follow the following calling pattern.
  *
  * markupConverter( l,data):
- *   l: the template, whether a lisp string(TODO) or a javascript list datastructure, to be converted to markup.
+ *   l: the template, whether a lisp string or a javascript list datastructure, to be converted to markup.
  *     entries in l are handled accoring to the type of the entry:
  *       - lists within this list are evaluated recursively like in lisp.
- *       - objects are property sets which are added to current node in the markup. TODO allow using templates and macros to fill object properties.
+ *       - objects are property sets which are added to current node in the markup.
  *       - a function in the first position of a list is a macro.
  *       - a function in a non-first position is a view function.
  *       - views in l are called with a data parameter which is the current context in the data.
@@ -211,7 +211,7 @@
         if(typeof taghandler != "function"){
             throw "Lisp2Markup markup conversion function: taghandler argument must be a function"; }
         
-        // TODO make sure the right 'markupConverter' closure with access to the proper taghandler is used for all recursive calls.
+        // TODO make sure the right 'markupConverter' closure, with access to the proper taghandler is used for all recursive calls.
         // Some test cases would be nice.
         return markupConverter;  
         function markupConverter(l, data){
