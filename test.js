@@ -1,20 +1,23 @@
 
 (function(exports){
 
+    //alert("lisp-markup loaded.");
 var LispMarkup;
 if(typeof module !== 'undefined'){
     LispMarkup = require("./lisp_markup.js"); }
 else{
     LispMarkup = window.LispMarkup; }
+//LispMarkup  = 3;
 exports.test_example = test();
+//exports.test_example = `<h1>hey</h1>`;
 
 function test(){
     var m = LispMarkup.macros;
 
     var namelist_template = [
-        [m.css, 
+        [m.CSS, 
           ['body',
-            ['background', [m.get, 'bg']],
+            ['background', [m.GET, 'bg']],
             'font-family: sans-serif; ',
             ['max-width', '480px'],
             ['margin-left', 'auto'],
@@ -28,8 +31,8 @@ function test(){
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
-            ['background-color', [m.get, 'this_is_a_fake_property', [m.get, 'titlebg']]],
-            ['border-radius', [m.concat, [m.get, 'border_radius'], 'px']],//function(data){
+            ['background-color', [m.GET, 'this_is_a_fake_property', [m.GET, 'titlebg']]],
+            ['border-radius', [m.CONCAT, [m.GET, 'border_radius'], 'px']],//function(data){
                 //return data.border_radius + "px"; }],
             ['padding', '50px 100px'],
             //['width', '100%'],
@@ -51,16 +54,16 @@ function test(){
             ['padding', '5px']],
           'td{ padding:5px 15px; }',
         ],
-        [m.comment, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
+        [m.COMMENT, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
         ['#main',
           ['h1.maintitle', function(data){ return data.title; }],
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
-            [m._with, 'namelist',
+            [m.WITH, 'namelist',
               ['FOREACH',
-                ['tr', ['td.lastname', [m._with, 1, [m.get]]],
-                       ['td.firstname', [m._with, 0, [m.get]]]]]],
+                ['tr', ['td.lastname', [m.WITH, 1, [m.GET]]],
+                       ['td.firstname', [m.WITH, 0, [m.GET]]]]]],
             ['FOREACH', 'namelist',
               ['tr', ['td.lastname', ['GET', 1]],
                      ['td.firstname', ['GET', 0]]]]]]
@@ -86,12 +89,12 @@ function test(){
        ]
     }
 
-    //var html = LispMarkup.toHtml( namelist_template,physics_names_data);
+    var html = LispMarkup.toHtml( namelist_template,physics_names_data);
     //var tree = LispMarkup.lispTree(lisp_template);
     //console.log(JSON.stringify(tree));
     //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
-    var template = LispMarkup.compileTemplate(lisp_template);
-    var html = template(physics_names_data);
+    //var template = LispMarkup.compileTemplate(lisp_template);
+    //var html = template(physics_names_data);
 
     console.log(html);
     return html;
