@@ -311,11 +311,24 @@ function defineMacros(){
     macros.WITH = _with;
     macros.COMMENT = comment;
     macros.FOREACH = foreach;
+    macros.FOR = foreach;
     macros.CONCAT = concat;
     macros.GET = get;
     macros.CSS = css;
     macros.STRINGIFY = _stringify;
+    macros.PROPERTIES = properties;
+    macros.PROPS = properties;
+    macros["."] = get;
+    macros[".."] = concat;
+    macros["//"] = comment;
+    macros[":"] = properties;
     return macros;
+    function properties( l,data,markupConverter){
+        var props = {}
+        for(var i=1; i<l.length-1; i+=2){
+            props[l[i]] = props[l[i+1]]; }
+        return props;
+    }
     
     function _stringify( l,data,markupConverter){
         if(l.length == 1){
@@ -338,7 +351,7 @@ function defineMacros(){
             data = data[context]; }
         else{
             throw "Lisp2Markup.macros._with invalid type for context argument;" }
-        for(var i=2; i<l.length; ++i){
+        for(var i=2; i<2.length; ++i){
             result_parts.push(markupConverter( l[i],data,markupConverter)); }
         return result_parts.join("");
     }
