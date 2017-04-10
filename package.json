@@ -1,14 +1,14 @@
 {
-  "name": "lisp2markup",
-  "version": "0.1.0",
+  "name": "lisp-markup",
+  "version": "0.3.0",
   "description": "A lisp based template language for markup with a focus on macros.",
-  "main": "lisp2markup.js",
+  "main": "lisp_markup.js",
   "scripts": {
-    "test": "node lisp2markup_test.js"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/derekmc/lisp2markup-js.git"
+    "url": "git+https://github.com/derekmc/lisp-markup-js.git"
   },
   "keywords": [
     "html",
@@ -17,7 +17,7 @@
   "author": "Derek McDaniel",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/derekmc/lisp2markup-js/issues"
+    "url": "https://github.com/derekmc/lisp-markup-js/issues"
   },
-  "homepage": "https://github.com/derekmc/lisp2markup-js#readme"
+  "homepage": "https://github.com/derekmc/lisp-markup-js#readme"
 }
