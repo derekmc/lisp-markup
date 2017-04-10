@@ -351,7 +351,7 @@ function defineMacros(){
             data = data[context]; }
         else{
             throw "Lisp2Markup.macros._with invalid type for context argument;" }
-        for(var i=2; i<2.length; ++i){
+        for(var i=2; i<l.length; ++i){
             result_parts.push(markupConverter( l[i],data,markupConverter)); }
         return result_parts.join("");
     }
