@@ -289,6 +289,8 @@ function defineExports(){
                             props[k] = markupConverter(property_value, data); }
                         else if(typeof property_value == 'string' || typeof property_value == 'number'){
                             props[k] = property_value; }
+                        else if(property_value === null || property_value === undefined){
+                            props[k] = null; }
                         else{
                             throw new Error("LispMarkup: illegal property value type."); }}}
                 else if(typeof x == "function"){
