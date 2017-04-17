@@ -158,7 +158,12 @@ function defineExports(){
         for(var k in props){
             proplist.push(k, props[k]); }
         for(var i=0; i<proplist.length-1; i += 2){
-            open_parts.push(" ", proplist[i], "=\"", proplist[i+1],"\""); }
+            var propname = proplist[i];
+            var propvalue = proplist[i+1];
+            if(propvalue === null || propvalue === undefined){
+                open_parts.push(" ", propname); }
+            else{
+                open_parts.push(" ", propname, "=\"", propvalue, "\""); }}
         if(class_list.length){
             open_parts.push(" class=\"");
             for(var i=0; i<class_list.length; ++i){
@@ -260,6 +265,8 @@ function defineExports(){
                             props[k] = markupConverter(property_value, data); }
                         else if(typeof property_value == 'string' || typeof property_value == 'number'){
                             props[k] = property_value; }
+                        else if(property_value === null || property_value === undefined){
+                            props[k] = null; }
                         else{
                             throw new Error("LispMarkup: illegal property value type."); }}
                 }
