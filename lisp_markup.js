@@ -413,11 +413,12 @@ function defineMacros(){
     function css( l,data,markupConverter){
         var result_parts = ['<style>'];
         for(var i=1; i<l.length; ++i){
-            handleEntry(l[i]); }
+            result_parts.push(handleEntry(l[i])); }
         result_parts.push('</style>');
         return result_parts.join('');
         
         function handleRule(rule){
+            var result_parts = [];
             if(typeof rule == "function"){
                 rule = rule(data); 
                 if(typeof rule != "string"){
@@ -430,25 +431,31 @@ function defineMacros(){
                 if(typeof first == "function"){
                     return handleRule(first( rule,data,markupConverter)); }
                 if(typeof first == "string"){
-                    if(rule.length != 2){
-                        throw "Lisp2Markup.macros.css: css rule must have 2 entries, property and value"; }
+                    if(rule.length < 2){
+                        throw "Lisp2Markup.macros.css: css rule must have at least 2 entries, a property and a value"; }
                     var property = first;
-                    var value = rule[1];
-                    if(Array.isArray(value)){
-                        if(typeof value[0] != 'function'){
-                            throw "Lisp2Markup.macros.css: if css rule value is list, it must be a macro call."; }
-                        var newvalue = value[0]( value,data,markupConverter);
-                        var newrule = [property, newvalue];
-                        return handleRule(newrule); }
-                    if(typeof value == "function"){
-                        value = value(data); }
-                    if(typeof value != "string"){
-                        throw "Lisp2Markup.macros.css: css rule value not a string, macro call, or view returning a string."; }
-                    result_parts.push(property + ": "  + value + "; "); }
+                    var value_parts = [];
+
+                    for(var i=1; i<rule.length; ++i){
+                        var value = rule[i];
+                        if(Array.isArray(value)){
+                            if(typeof value[0] != 'function'){
+                                throw "Lisp2Markup.macros.css: if css rule value is a list, it must be a macro call."; }
+                            var newvalue = value[0]( value,data,markupConverter);
+                            value_parts.push(newvalue); }
+                        else if(typeof value == "function"){
+                            value_parts.push(value(data)); }
+                        else if(typeof value == "string"){
+                            value_parts.push(value); }
+                        else{
+                            throw "Lisp2Markup.macros.css: css rule value not a string, macro call, or view returning a string."; }}
+                    result_parts.push(property + ": "  + value_parts.join(" ") + "; "); }
                 else{
                     throw "Lisp2Markup.macros.css: css rule property not a string"; }}
+            return result_parts.join("");
         }
         function handleEntry(entry){
+            var result_parts = [];
             if(typeof entry == "string"){
                 result_parts.push(entry); }
             else if(typeof entry == "function"){
@@ -465,12 +472,13 @@ function defineMacros(){
                     result_parts.push(selector + "{");
                     for(var i=1; i<entry.length; ++i){
                         var rule = entry[i];
-                        handleRule(rule); }
+                        result_parts.push(handleRule(rule)); }
                     result_parts.push("}"); }
                 else{
                     throw "Lisp2Markup.macros.css: invalid selector type"; }}
             else{
                 throw "Lisp2Markup.macros.css: invalid entry type"; }
+            return result_parts.join("");
         }
     }
 

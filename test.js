@@ -9,6 +9,7 @@ else{
     LispMarkup = window.LispMarkup; }
 //LispMarkup  = 3;
 exports.test_example = test();
+console.log(exports.test_example);
 //exports.test_example = `<h1>hey</h1>`;
 
 function test(){
@@ -31,6 +32,7 @@ function test(){
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
+            ['border', '3px', 'solid', 'green'],
             ['background-color', [m.GET, 'this_is_a_fake_property', [m.GET, 'titlebg']]],
             ['border-radius', [m.CONCAT, [m.GET, 'border_radius'], 'px']],//function(data){
                 //return data.border_radius + "px"; }],
@@ -96,7 +98,7 @@ function test(){
     //var template = LispMarkup.compileTemplate(lisp_template);
     //var html = template(physics_names_data);
 
-    console.log(html);
+    //console.log(html);
     return html;
 }
 
