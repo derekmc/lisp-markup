@@ -83,16 +83,6 @@ function defineExports(){
     for(var k in macros){ // copy macros for external object, but don't expose original.
         exports.macros[k] = macros[k]; }
 
-    var script_sources = {};
-    var templates = {};
-
-    var CONTAINER_SUFFIX = "-container";
-    var DATA_SUFFIX = "_data";
-    var CONTENT_SUFFIX = /-content$|-template$/
-
-    var SCRIPT_TYPE = "text/lisp-markup"; 
-
-
     // =========== Last Procedural Statement in Module ==============
     return exports;
 
@@ -491,37 +481,7 @@ function defineMacros(){
             return result_parts.join("");
         }
     }
-
-
 }
 
-function updateContainer(container_id, dataset){
-    function getContainers(_id){
-        return document.getElementsByClassName(_id + "-container"); }
-
-    var list = getContainers(id);
-    if(list.length == 0){
-        console.warn("LispMarkup: updateContainer() for id '" + id + "', no matching container."); }
-}
-
-function getScripts(){
-    var elems = document.getElementsByTagName("script");
-    for(var i=0; i<elems.length; ++i){
-        var elem = elems[i];
-        var scriptid = elem.id;
-        var type = elem.type;
-        var value = elem.innerHTML;
-        if(scriptid){ // remove suffix from id.
-            scriptid = scriptid.replace(CONTENT_SUFFIX, ""); }
-        if(type == SCRIPT_TYPE){
-            scripts[scriptid] = value; }
-    }
-}
-
-function browserInit({
-    console.log("init lisp_markup.js in browser.");
-    getScripts();
-    updateAll();
-}
 
 })()
