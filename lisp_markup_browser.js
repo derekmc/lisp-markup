@@ -85,7 +85,7 @@ var LispMarkupBrowser = {};
 
             if(!container_name) break;
             updateContainer(container_name, datasets[container_name]);
-            queued_container_counts[container_name] = true;
+            queued_containers[container_name] = true;
         }
     }
 
