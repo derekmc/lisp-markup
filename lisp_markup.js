@@ -102,7 +102,7 @@ function defineExports(){
         if(typeof template == "string"){
             template = lispTree(template); }
         if(!Array.isArray(template)){
-            throw new Error("LispMarkup.compileTemplate: Template must be a lisp tree."); }
+            throw new Error("LispMarkup.compileTemplate: Template must be a lisp tree or an array."); }
         //console.log(JSON.stringify(template));
         var converter;
         if(taghandler){
