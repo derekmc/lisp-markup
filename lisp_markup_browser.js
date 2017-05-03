@@ -85,7 +85,6 @@ var LispMarkupBrowser = {};
 
             if(!container_name) break;
             updateContainer(container_name, datasets[container_name]);
-            queued_containers[container_name] = true;
         }
     }
 
@@ -94,13 +93,14 @@ var LispMarkupBrowser = {};
         if(container_list.length == 0){
             console.warn("LispMarkupBrowser updateContainer(): no container with name '" + container_name + "'."); }
 
+        if(data === undefined){
+            var data_var_name = container_name + DATA_SUFFIX;
+            if(data_var_name in window){
+                data = window[data_var_name]; }}
+
         // render
         for(var i=0; i<container_list.length; ++i){
             var template = templates[container_name];
-            if(data === undefined){
-                var data_var_name = container_name + DATA_SUFFIX;
-                if(data_var_name in window){
-                    data = window[data_var_name]; }}
             container_list[i].innerHTML = template(data); }
         }
     }
