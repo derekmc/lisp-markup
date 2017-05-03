@@ -66,7 +66,7 @@ var LispMarkupBrowser = {};
         var container_queue = [""];  //empty string signals to check for new containers, starting a new recursive render depth.
         var queued_containers = {};
         while(true){
-            var container_name = container_queue.unshift();
+            var container_name = container_queue.shift();
             if(container_name.length == 0){  // empty string signals to check for new containers after each render depth is completed.
                 var new_containers = false;
                 for(var _container_name in templates){
