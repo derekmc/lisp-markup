@@ -2,23 +2,26 @@
 <html>
   <body>
     <div id="main-container"></div>
+
     <script src="lisp_markup.js"></script>
     <script src="lisp_markup_browser.js"></script>
+
+    <script>
+      var main_data = {
+          prime_list: [2,3,5,7,11,13,17,19]
+      }
+    </script>
+
     <script id="main-template" type="text/lisp-markup">
       (h1 Prime Numbers)
       (CSS (th,td (padding 8px 20px)
-                  (border 2px solid black))
+                  (border-bottom 1px solid black))
            (table (border-spacing 0)
                   (border 2px solid black)))
       (table
         (FORINDEX prime_list
           (tr (td (. INDEX) (: style "color: white; background: blue;"))
               (th (. VALUE) (: id (.. prime_ (. INDEX)) style "font-size: 180%")))))
-    </script>
-    <script>
-      var main_data = {
-          prime_list: [2,3,5,7,11,13,17,19]
-      }
     </script>
   </body>
 </html>
