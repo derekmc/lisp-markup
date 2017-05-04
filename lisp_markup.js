@@ -397,15 +397,15 @@ function defineMacros(){
     }
     function get( l,data,markupConverter){
         if(l.length == 1){
-            return data; }
+            return data.toString(); }
         else if(l.length == 2){
-            return data[l[1]]; }
+            return data[l[1]].toString(); }
         else if(l.length == 3){
             var value = data[l[1]];
             if(value === null || value === undefined){
                 // compute default value
                 value = markupConverter(l[2],data,markupConverter); }
-            return value; }
+            return value.toString(); }
         else{
             throw "Lisp2Markup.macros.get invalid number of list arguments"; 
         }
