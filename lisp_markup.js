@@ -339,7 +339,7 @@ function defineMacros(){
     macros[".."] = concat;
     macros["..."] = concat_space;
     macros["//"] = comment;
-    macros[":"] = properties;
+    macros["="] = properties;
     return macros;
     function properties( l,data,markupConverter){
         var props = {}
