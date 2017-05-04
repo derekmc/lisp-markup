@@ -259,16 +259,7 @@ function defineExports(){
                 else if(Array.isArray(macro_result)){
                     return markupConverter(macro_result, data); }
                 else if(typeof macro_result == "object" && macro_result.constructor == ({}).constructor){
-                    for(var k in macro_result){
-                        var property_value = macro_result[k];
-                        if(Array.isArray(property_value)){
-                            props[k] = markupConverter(property_value, data); }
-                        else if(typeof property_value == 'string' || typeof property_value == 'number'){
-                            props[k] = property_value; }
-                        else if(property_value === null || property_value === undefined){
-                            props[k] = null; }
-                        else{
-                            throw new Error("LispMarkup: illegal property value type."); }}
+                    return macro_result;
                 }
                 else if(!macro_result){
                     return ""; }
@@ -281,10 +272,25 @@ function defineExports(){
                 if(i==0 && tagname) continue; //skip tag
                 var x = l[i];
                 if(Array.isArray(x)){
-                    result_parts.push(markupConverter(x, data)); }
+                    var result = markupConverter(x, data);
+                    if(typeof result == "object" && result.constructor == ({}).constructor){
+                        console.log("attributes ", result);
+                        for(var k in result){
+                            var property_value = result[k];
+                            if(Array.isArray(property_value)){
+                                props[k] = markupConverter(property_value, data); }
+                            else if(typeof property_value == 'string' || typeof property_value == 'number'){
+                                props[k] = property_value; }
+                            else if(property_value === null || property_value === undefined){
+                                props[k] = null; }
+                            else{
+                                throw new Error("LispMarkup: illegal property value type."); }}}
+                    else{
+                        // TODO typecheck
+                        result_parts.push(result); }}
                 else if(typeof x == "object"){
-                    for(var k in macro_result){
-                        var property_value = macro_result[k];
+                    for(var k in x){
+                        var property_value = x[k];
                         if(Array.isArray(property_value)){
                             props[k] = markupConverter(property_value, data); }
                         else if(typeof property_value == 'string' || typeof property_value == 'number'){
@@ -320,6 +326,7 @@ function defineMacros(){
     macros.WITH = _with;
     macros.COMMENT = comment;
     macros.FOREACH = foreach;
+    macros.FORINDEX = forindex;
     macros.FOR = foreach;
     macros.CONCAT = concat;
     macros.GET = get;
@@ -335,7 +342,7 @@ function defineMacros(){
     function properties( l,data,markupConverter){
         var props = {}
         for(var i=1; i<l.length-1; i+=2){
-            props[l[i]] = props[l[i+1]]; }
+            props[l[i]] = l[i+1]; }
         return props;
     }
     
@@ -367,6 +374,33 @@ function defineMacros(){
     function comment( l,data,markupConverter){
         return "";
     }
+    function forindex( l,data,markupConverter){
+        var result_parts = [];
+        var datalist = [];
+        var _l;
+        if(l.length == 2){
+            datalist = data;
+            _l = l[1]; }
+        else if(l.length == 3){
+            var listgetter = l[1];
+            _l = l[2];
+            if(typeof listgetter == "function"){
+                datalist = listgetter(data); }
+            else if(typeof listgetter == "string"){
+                datalist = data[listgetter]; }}
+        else{
+            throw "Lisp2Markup.macros.foreach invalid number list of arguments"; }
+        
+        for(var i=0; i<datalist.length; ++i){
+            var item = datalist[i];
+            var data_obj = {
+                INDEX: i+1,
+                VALUE: item
+            }
+            result_parts.push(markupConverter( _l,data_obj)); }
+        return result_parts.join('');
+ 
+    }
     function foreach( l,data,markupConverter){
         var result_parts = [];
         var datalist = [];
@@ -392,7 +426,8 @@ function defineMacros(){
     function concat( l,data,markupConverter){
         var result_parts = [''];
         for(var i=1; i<l.length; ++i){
-            result_parts.push(markupConverter( l[i],data)); }
+            var s = markupConverter( l[i],data);
+            result_parts.push(s.substr(0,s.length-1)); }
         return result_parts.join('');
     }
     function get( l,data,markupConverter){

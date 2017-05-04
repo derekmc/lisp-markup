@@ -5,10 +5,15 @@
     <script src="lisp_markup.js"></script>
     <script src="lisp_markup_browser.js"></script>
     <script id="main-template" type="text/lisp-markup">
-      (h1 Eight Prime Numbers)
+      (h1 Prime Numbers)
+      (CSS (th,td (padding 8px 20px)
+                  (border 2px solid black))
+           (table (border-spacing 0)
+                  (border 2px solid black)))
       (table
-        (FOR prime_list
-          (tr (td (.)))))
+        (FORINDEX prime_list
+          (tr (td (. INDEX) (: style "color: white; background: blue;"))
+              (th (. VALUE) (: id (.. prime_ (. INDEX)) style "font-size: 180%")))))
     </script>
     <script>
       var main_data = {
