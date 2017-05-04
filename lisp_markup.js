@@ -329,6 +329,7 @@ function defineMacros(){
     macros.FORINDEX = forindex;
     macros.FOR = foreach;
     macros.CONCAT = concat;
+    macros.CONCAT_SPACE = concat_space;
     macros.GET = get;
     macros.CSS = css;
     macros.STRINGIFY = _stringify;
@@ -336,6 +337,7 @@ function defineMacros(){
     macros.PROPS = properties;
     macros["."] = get;
     macros[".."] = concat;
+    macros["..."] = concat_space;
     macros["//"] = comment;
     macros[":"] = properties;
     return macros;
@@ -427,9 +429,17 @@ function defineMacros(){
         var result_parts = [''];
         for(var i=1; i<l.length; ++i){
             var s = markupConverter( l[i],data);
-            result_parts.push(s.substr(0,s.length-1)); }
+            result_parts.push(s.toString().trim()); }
         return result_parts.join('');
     }
+    function concat_space( l,data,markupConverter){
+        var result_parts = [''];
+        for(var i=1; i<l.length; ++i){
+            var s = markupConverter( l[i],data);
+            result_parts.push(s.toString()); }
+        return result_parts.join('');
+    }
+
     function get( l,data,markupConverter){
         if(l.length == 1){
             return data.toString(); }
