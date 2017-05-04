@@ -43,7 +43,9 @@ var LispMarkupBrowser = {};
         return list;
     }
 
-    // Doesn't allow recursive container updates.
+    // Performs recursive container updates.
+    // Doesn't allow containers with the same name at different recursive render depths,
+    // If a container has the same name as a container that was rendered in a previous recursive render depth, it won't get filled.
     function updateAll(datasets){
         if(datasets === null || datasets == undefined) datasets = {};
         if(typeof datasets != "object"){
@@ -57,11 +59,11 @@ var LispMarkupBrowser = {};
 
         
         // Update all containers.
-        // All containers with the same name must exist at the same depth of the container rendering recursion.
-        // There is no way to distinguish new containers from ones that existed before or were updated before,
-        // So there is no other way to ensure all containers with the same name get rendered exactly once.
-        // this is the only way to avoid updating the same container twice, and also ensure all instances of a container get updated.
-        // It also avoids creating an infinitely recursing container structure.
+        // Containers with the same name should not be created at different depths of recursive rendering, including the top level. 
+        // There is no easy way to distinguish newly rendered containers from existing ones,
+        // so this ensures all containers with the same name get rendered exactly once.
+        // It also avoids infinitely recursing container structure.
+        // If you create a container with the same name as one existing in a previous recursive render depth, it will not be filled.
 
         var container_queue = [""];  //empty string signals to check for new containers, starting a new recursive render depth.
         var queued_containers = {};
@@ -78,7 +80,7 @@ var LispMarkupBrowser = {};
                             new_containers = true;
                             container_queue.push(name); 
                             queued_containers[_container_name] = true; }}}
-                if(new_containers){
+                if(new_containers){ // do another render depth, because new containers were found.
                     queued_containers.push(""); }
                 continue;
             }
