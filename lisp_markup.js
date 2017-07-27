@@ -332,6 +332,7 @@ function defineMacros(){
     macros.CONCAT_SPACE = concat_space;
     macros.GET = get;
     macros.CSS = css;
+    macros.LET = _let;
     macros.STRINGIFY = _stringify;
     macros.PROPERTIES = properties;
     macros.PROPS = properties;
@@ -340,6 +341,7 @@ function defineMacros(){
     macros["..."] = concat_space;
     macros["//"] = comment;
     macros[":"] = properties;
+    macros["="] = _let;
     return macros;
     function properties( l,data,markupConverter){
         var props = {}
@@ -413,14 +415,14 @@ function defineMacros(){
         var name = l[1];
         var value = l[2];
         if(Array.isArray(name)){
-            name = markupCoverter(name, data, markupCoverter); }
+            name = markupConverter(name, data, markupConverter); }
         else if(typeof name == "function"){
             name = name(data); }
         if(typeof name != "string"){
             throw new Error("LispMarkup.macros.LET: Let name not a string or convertible to string."); }
 
         if(Array.isArray(value)){
-            value = markupCoverter(value, data, markupCoverter); }
+            value = markupConverter(value, data, markupConverter); }
         else if(typeof value == "function"){
             value = value(data); }
         if(typeof value != "string"){

@@ -19,9 +19,9 @@
            (table (border-spacing 0)
                   (border 2px solid black)))
       (table
-        (FORINDEX prime_list
-          (tr (td (. I) (: style "color: white; background: blue;"))
-              (th (. X) (: id (.. prime_ (. I)) style "font-size: 180%")))))
+        (FORINDEX prime_list (= J (. I) (= O (. X)
+          (tr (td (. J) (: style "color: white; background: blue;"))
+              (th (. O) (: id (.. prime_ (. I)) style "font-size: 180%")))))))
     </script>
   </body>
 </html>
