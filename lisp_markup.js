@@ -32,7 +32,7 @@
  *          macro( template,data,markupConverter);
  *            - l: the current list this macro is applied to,
  *                 which will include the macro itself in the first position.
- *            - data: for templating, this is the same parameter that is passed to markupCoverter( l,data), see more below.
+ *            - data: for templating, this is the same parameter that is passed to markupConverter( l,data), see more below.
  *            - markupConverter: macros are provided the current markupConverter function so they can do more magic.
  *
  *            The macro's return value is used in place of the original list with the macro.
@@ -229,7 +229,7 @@ function defineExports(){
     
     function customTagMarkupConverter(taghandler){
         if(typeof taghandler != "function"){
-            throw "LispMarkup markup conversion function: taghandler argument must be a function"; }
+            throw new Error("LispMarkup markup conversion function: taghandler argument must be a function"); }
         
         // TODO make sure the right 'markupConverter' closure, with access to the proper taghandler is used for all recursive calls.
         // Some test cases would be nice.
@@ -264,7 +264,7 @@ function defineExports(){
                 else if(!macro_result){
                     return ""; }
                 else{
-                    throw "LispMarkup markup conversion function: macro returned value with invalid type."; }
+                    throw new Error("LispMarkup markup conversion function: macro returned value with invalid type."); }
                 // returned
             }
 
@@ -308,7 +308,7 @@ function defineExports(){
                     else if(!view_result){
                         result_parts.push(""); }
                     else{
-                        throw "LispMarkup markup conversion function: template returned value with invalid type."; }}
+                        throw new Error("LispMarkup markup conversion function: template returned value with invalid type."); }}
                 else{
                      if(x) result_parts.push(x.toString() + " "); }
             }
@@ -353,22 +353,22 @@ function defineMacros(){
             return JSON.stringify(data); }
         if(l.length == 2){
             return JSON.stringify(data[l[1]]); }
-        throw "Lisp2Markup.macros.STRINGIFY: only 0 or 1 arguments allowed.";
+        throw new Error("LispMarkup.macros.STRINGIFY: only 0 or 1 arguments allowed.");
 
     }
     function _with( l,data,markupConverter){
         var result_parts = [];
         if(l.length < 3){
-            throw "Lisp2Markup.macros._with not enough list arguments"; }
+            throw new Error("LispMarkup.macros._with not enough list arguments"); }
         var context = l[1];
         if(!data){
-            throw "Lisp2Markup.macros._with data is not defined"; }
+            throw new Error("LispMarkup.macros._with data is not defined"); }
         if(typeof context == "function"){
             data = context(data); }
         else if(typeof context == "string" || typeof context == "number"){
             data = data[context]; }
         else{
-            throw "Lisp2Markup.macros._with invalid type for context argument;" }
+            throw new Error("LispMarkup.macros._with invalid type for context argument"); }
         for(var i=2; i<l.length; ++i){
             result_parts.push(markupConverter( l[i],data,markupConverter)); }
         return result_parts.join("");
@@ -391,17 +391,48 @@ function defineMacros(){
             else if(typeof listgetter == "string"){
                 datalist = data[listgetter]; }}
         else{
-            throw "Lisp2Markup.macros.foreach invalid number list of arguments"; }
+            throw new Error("LispMarkup.macros.foreach invalid number list of arguments"); }
         
         for(var i=0; i<datalist.length; ++i){
             var item = datalist[i];
             var data_obj = {
                 INDEX: i+1,
-                VALUE: item
+                VALUE: item,
+                I: i+1,
+                VAL: item,
+                X: item
             }
             result_parts.push(markupConverter( _l,data_obj)); }
         return result_parts.join('');
  
+    }
+    function _let( l,data,markupConverter){
+        var data_copy = JSON.parse(JSON.stringify(data));
+        if(l.length < 3){
+            throw new Error("LispMarkup.macros.LET: At least 2 arguments are required"); }
+        var name = l[1];
+        var value = l[2];
+        if(Array.isArray(name)){
+            name = markupCoverter(name, data, markupCoverter); }
+        else if(typeof name == "function"){
+            name = name(data); }
+        if(typeof name != "string"){
+            throw new Error("LispMarkup.macros.LET: Let name not a string or convertible to string."); }
+
+        if(Array.isArray(value)){
+            value = markupCoverter(value, data, markupCoverter); }
+        else if(typeof value == "function"){
+            value = value(data); }
+        if(typeof value != "string"){
+            throw new Error("LispMarkup.macros.LET: Let value not a string or convertible to string."); }
+
+        data_copy[name] = value;
+
+        var result_parts = []
+        for(var i=3; i<l.length; ++i){
+            result_parts.push(markupConverter( l[i], data_copy, markupConverter)); }
+
+        return result_parts.join("");
     }
     function foreach( l,data,markupConverter){
         var result_parts = [];
@@ -418,7 +449,7 @@ function defineMacros(){
             else if(typeof listgetter == "string"){
                 datalist = data[listgetter]; }}
         else{
-            throw "Lisp2Markup.macros.foreach invalid number list of arguments"; }
+            throw new Error("LispMarkup.macros.FORINDEX: invalid number list of arguments"); }
         
         for(var i=0; i<datalist.length; ++i){
             var item = datalist[i];
@@ -452,7 +483,7 @@ function defineMacros(){
                 value = markupConverter(l[2],data,markupConverter); }
             return value.toString(); }
         else{
-            throw "Lisp2Markup.macros.get invalid number of list arguments"; 
+            throw new Error("LispMarkup.macros.get invalid number of list arguments"); 
         }
     }
     function css( l,data,markupConverter){
@@ -467,7 +498,7 @@ function defineMacros(){
             if(typeof rule == "function"){
                 rule = rule(data); 
                 if(typeof rule != "string"){
-                     throw "Lisp2Markup.macros.css: tranform function for css rule did not return a string value."; }
+                     throw new Error("LispMarkup.macros.css: tranform function for css rule did not return a string value."); }
                 result_parts.push(rule); }
             else if(typeof rule == "string"){
                 result_parts.push(rule); }
@@ -477,7 +508,7 @@ function defineMacros(){
                     return handleRule(first( rule,data,markupConverter)); }
                 if(typeof first == "string"){
                     if(rule.length < 2){
-                        throw "Lisp2Markup.macros.css: css rule must have at least 2 entries, a property and a value"; }
+                        throw new Error("LispMarkup.macros.css: css rule must have at least 2 entries, a property and a value"); }
                     var property = first;
                     var value_parts = [];
 
@@ -485,7 +516,7 @@ function defineMacros(){
                         var value = rule[i];
                         if(Array.isArray(value)){
                             if(typeof value[0] != 'function'){
-                                throw "Lisp2Markup.macros.css: if css rule value is a list, it must be a macro call."; }
+                                throw new Error("LispMarkup.macros.css: if css rule value is a list, it must be a macro call."); }
                             var newvalue = value[0]( value,data,markupConverter);
                             value_parts.push(newvalue); }
                         else if(typeof value == "function"){
@@ -493,10 +524,10 @@ function defineMacros(){
                         else if(typeof value == "string"){
                             value_parts.push(value); }
                         else{
-                            throw "Lisp2Markup.macros.css: css rule value not a string, macro call, or view returning a string."; }}
+                            throw new Error("LispMarkup.macros.css: css rule value not a string, macro call, or view returning a string."); }}
                     result_parts.push(property + ": "  + value_parts.join(" ") + "; "); }
                 else{
-                    throw "Lisp2Markup.macros.css: css rule property not a string"; }}
+                    throw new Error("LispMarkup.macros.css: css rule property not a string"); }}
             return result_parts.join("");
         }
         function handleEntry(entry){
@@ -506,7 +537,7 @@ function defineMacros(){
             else if(typeof entry == "function"){
                 entry = entry(data);
                 if(typeof entry != "string"){
-                    throw "Lisp2Markup.macros.css: css entry view did not return a string" }
+                    throw new Error("LispMarkup.macros.css: css entry view did not return a string"); }
                 result_parts.push(entry); }
             else if(Array.isArray(entry)){
                 var first = entry[0];
@@ -520,9 +551,9 @@ function defineMacros(){
                         result_parts.push(handleRule(rule)); }
                     result_parts.push("}"); }
                 else{
-                    throw "Lisp2Markup.macros.css: invalid selector type"; }}
+                    throw new Error("LispMarkup.macros.css: invalid selector type"); }}
             else{
-                throw "Lisp2Markup.macros.css: invalid entry type"; }
+                throw new Error("LispMarkup.macros.css: invalid entry type"); }
             return result_parts.join("");
         }
     }
