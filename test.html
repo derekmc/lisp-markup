@@ -1,10 +1,27 @@
 
 <html>
   <body>
+    <div id="main-container"></div>
+
     <script src="lisp_markup.js"></script>
-    <script src="test.js"></script>
+    <script src="lisp_markup_browser.js"></script>
+
     <script>
-        document.body.innerHTML = LispMarkupTest.test_example;
+      var main_data = {
+          prime_list: [2,3,5,7,11,13,17,19]
+      }
+    </script>
+
+    <script id="main-template" type="text/lisp-markup">
+      (h1 Prime Numbers)
+      (CSS (th,td (padding 8px 20px)
+                  (border-bottom 1px solid black))
+           (table (border-spacing 0)
+                  (border 2px solid black)))
+      (table
+        (FORINDEX prime_list (= J (. I) (= O (. X)
+          (tr (td (. J) (: style "color: white; background: blue;"))
+              (th (. O) (: id (.. prime_ (. I)) style "font-size: 180%")))))))
     </script>
   </body>
 </html>
