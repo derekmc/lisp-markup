@@ -408,33 +408,36 @@ function defineMacros(){
         return result_parts.join('');
  
     }
+    // if first param is array, it is list of assignments, otherwise, just do one assignnment.
+    // variables must begin with '$'
+    // variables can be referenced as '$a' or '${a}'
+    // only assigned variables are substituted.  '$' not part of an assigned variable are ignored.
     function _let( l,data,markupConverter){
-        var data_copy = JSON.parse(JSON.stringify(data));
+        var one = l[1];
+        var assign_list;
+        var substitutions = {};
+
         if(l.length < 3){
             throw new Error("LispMarkup.macros.LET: At least 2 arguments are required"); }
-        var name = l[1];
-        var value = l[2];
-        if(Array.isArray(name)){
-            name = markupConverter(name, data, markupConverter); }
-        else if(typeof name == "function"){
-            name = name(data); }
-        if(typeof name != "string"){
-            throw new Error("LispMarkup.macros.LET: Let name not a string or convertible to string."); }
 
-        if(Array.isArray(value)){
-            value = markupConverter(value, data, markupConverter); }
-        else if(typeof value == "function"){
-            value = value(data); }
-        if(typeof value != "string"){
-            throw new Error("LispMarkup.macros.LET: Let value not a string or convertible to string."); }
+        if(Array.isArray(one)){
+            assign_list = one; }
+        else{
+            assign_list = [l[1],l[2]]; }
 
-        data_copy[name] = value;
-
-        var result_parts = []
-        for(var i=3; i<l.length; ++i){
-            result_parts.push(markupConverter( l[i], data_copy, markupConverter)); }
-
-        return result_parts.join("");
+        if(assign_list.length % 2 != 0){
+            throw new Error("LispMarkup.macros.LET: assignment list must be even length."); }
+        for(var i=0; i<assign_list.length; i+=2){
+            var k = assign_list[i], v = assign_list[i+1];
+            if(typeof k != "string" || typeof v != "string"){
+                throw new Error("LispMarkup.macros.LET: currently, on strings are supported in assignment statements."); }
+            if(k.charAt(0) != '$'){
+                throw new Error("LispMarkup.macros.LET: variable must begin with '$'"); }
+            if(substitutions.hasOwnProperty(k)){
+                throw new Error("LispMarkup.macros.LET: variable '" + k + "' assigned previously in this let statement."); }
+            substitutions[k.substr(1)] = v;
+        }
+        // TODO substitutions
     }
     function foreach( l,data,markupConverter){
         var result_parts = [];
