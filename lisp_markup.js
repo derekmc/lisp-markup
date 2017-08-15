@@ -333,6 +333,7 @@ function defineMacros(){
     macros.GET = get;
     macros.CSS = css;
     macros.LET = _let;
+    macros.FOR = _for;
     macros.STRINGIFY = _stringify;
     macros.PROPERTIES = properties;
     macros.PROPS = properties;
@@ -363,7 +364,7 @@ function defineMacros(){
         if(l.length < 3){
             throw new Error("LispMarkup.macros._with not enough list arguments"); }
         var context = l[1];
-        if(!data){
+        if(data === null || data === "undefined"){
             throw new Error("LispMarkup.macros._with data is not defined"); }
         if(typeof context == "function"){
             data = context(data); }
@@ -408,6 +409,97 @@ function defineMacros(){
         return result_parts.join('');
  
     }
+    // if l[1] is array, it is a a list of FOR parameters,
+    // otherwise, l[1] is the the only FOR parameter.
+    // if the first parameter is not '$' prefixed, it is a selector,
+    // the first $ prefixed parameter is the index or key.
+    // the second $ prefixed parameter is the value.
+    // if there is only 1 $ prefixed parameter, the value is used as the data context.
+    function _for( l,data,markupConverter){
+        var one = l[1];
+        var params;
+        var substitutions;
+
+        if(l.length < 2){
+            throw new Error("LispMarkup.macros.FOR: at least 1 argument required."); }
+
+        if(Array.isArray(one)){
+            params = one; }
+        else{
+            params = [one]; }
+        if(params.length < 1){
+            throw new Error("LispMarkup.macros.FOR: param list is empty."); }
+        if(params.length > 3){
+            throw new Error("LispMarkup.macros.FOR: param list exceeds the 3 maximum allowed entries."); }
+
+        var index = 0;
+        var loop_data = data;
+        // if first param is not $ prefixed, it selects the loop_data.
+        if(typeof params[index] != "string" || params[index][0] != "$"){
+            var context = params[index];
+            ++index;
+            if(loop_data === null || loop_data === undefined){
+                throw new Error("LispMarkup.macros.FOR: data is not defined"); }
+            if(typeof context == "function"){
+                loop_data = context(loop_data); }
+            else if(typeof context == "string" || typeof context == "number"){
+                loop_data = loop_data[context]; }
+            else{
+                throw new Error("LispMarkup.macros.FOR: invalid type for context argument"); }
+        }
+        if(!Array.isArray(loop_data) && typeof loop_data != "object"){
+            throw new Error("LispMarkup.macros.FOR: loop_data context can't be iterated over, not array or object"); }
+
+        var ref_name = null, val_name = null;
+        if(index < params.length){
+            var p = params[index]; // index or key
+            ++index;
+            if(typeof p != "string" || p[0] != "$"){
+                throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop index or key"); }
+            ref_name = p.substr(1);
+        }
+        if(index < params.length){
+            var p = params[index];
+            ++index;
+            if(typeof p != "string" || p[0] != "$"){
+                throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop index or key"); }
+            val_name = p.substr(1);
+        }
+    
+        var rest = l.slice(2);
+        var result_parts = [];
+        var vars = {};
+        var loop = [];
+        if(ref_name !== null){
+            vars[ref_name] = "";
+            if(val_name !== null){
+                vars[val_name] = ""; }}
+        else if(val_name !== null){
+            throw new Error("LispMarkup.macros.FOR: loop value variable unexpectedly assigned when loop reference variable was not."); }
+
+        if(Array.isArray(loop_data)){
+            for(var i=0; i<loop_data.length; ++i){
+                loop.push([i+1, loop_data[i]]); }}
+        else if(typeof loop_data == "object"){
+            for(var k in loop_data){
+                loop.push([k, loop_data[k]]); }}
+
+        for(var i=0; i<loop.length; ++i){
+            var ref = loop[i][0];
+            var val = loop[i][1];
+            var current_data = data;
+            if(ref_name !== null){
+                vars[ref_name] = ref; }
+            if(val_name !== null){
+                vars[val_name] = val; }
+            else{
+                current_data = val; }
+            //console.log(vars);
+            var processed_rest = ref_name? substitute(rest, vars) : rest;
+            for(var j=0; j<processed_rest.length; ++j){
+                result_parts.push(markupConverter(processed_rest[j], current_data)); }}
+        return result_parts.join('');
+    }
     // if first param is array, it is list of assignments, otherwise, just do one assignnment.
     // variables must begin with '$'
     // variables can be referenced as '$a' or '${a}'
@@ -450,44 +542,53 @@ function defineMacros(){
         for(var i=0; i<l.length; ++i){
             result_parts.push(markupConverter(l[i], data).toString()); }
         return result_parts.join(''); 
+    }
 
-        function substitute(x, vars){
-            if(Array.isArray(x)){
-                for(var i=0; i<x.length; ++i){
-                    x[i] = substitute(x[i], vars); }
-                return x; }
-            if(typeof x == "object"){
-                for(var k in x){
-                    x[k] = substitute(x[k], vars); }
-                return x; }
-            if(typeof x == "string"){
-                var result_parts = [];
-                for(var i=0,k=0; i<x.length; ++i){
-                    var c = x[i];
-                    if(c=='\\') ++i;
-                    //  Variable substitution not performed in single quoted strings.
-                    if(c=='\''){
-                        while(++i<x.length && x[i]!='\''){
-                            if(x[i]=='\\') ++i; }}
-                    if(c=='$'){
-                        var j = i+1;
-                        var name = '';
-                        if(++i<x.length && x[i] == '{'){
-                            while(++i<x.length && x[i] != '}');
-                            name = x.substr(j+1,i-1); }
-                        else{
-                            while(++i<x.length && x[i].match(/[0-9A-Za-z]/));
-                            name = x.substr(j,i); }
-                        if(name.length && substitutions.hasOwnProperty(name)){
-                            result_parts.push(x.substr(k,j-1), substitutions[name]);
-                            k = i; }
-                    }
+    function substitute(x, vars){
+        if(typeof vars != "object"){
+            throw new Error("LispMarkup.substitute: vars must be an object map"); }
+
+        if(Array.isArray(x)){
+            var result = [];
+            for(var i=0; i<x.length; ++i){
+                result[i] = substitute(x[i], vars); }
+            return result; }
+        if(typeof x == "object"){
+            var result = {};
+            for(var k in x){
+                result[k] = substitute(x[k], vars); }
+            return x; }
+        if(typeof x == "string"){
+            var result_parts = [];
+            for(var i=0,k=0; i<x.length; ++i){
+                var c = x[i];
+                if(c=='\\') ++i;
+                //  Variable substitution not performed in single quoted strings.
+                if(c=='\''){
+                    while(++i<x.length && x[i]!='\''){
+                        if(x[i]=='\\') ++i; }}
+                if(c=='$'){
+                    var j = i+1;
+                    var name = '';
+                    ++i;
+                    if(i<x.length && x[i] == '{'){
+                        do ++i; 
+                        while(i<x.length && x[i] != '}');
+                        name = x.substr(j+1,i-1); }
+                    else{
+                        while(i<x.length && x[i].match(/[_0-9A-Za-z]/)){
+                            ++i; }
+                        name = x.substr(j,i); }
+                    if(name.length && vars.hasOwnProperty(name)){
+                        //console.log("substituting ", name, vars[name]);
+                        result_parts.push(x.substr(k,j-1), vars[name]);
+                        k = i; }
                 }
-                result_parts.push(x.substr(k));
-                return result_parts.join('');
             }
-            return x;
+            result_parts.push(x.substr(k));
+            return result_parts.join('');
         }
+        return x;
     }
     function foreach( l,data,markupConverter){
         var result_parts = [];
