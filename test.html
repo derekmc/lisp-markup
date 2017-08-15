@@ -8,7 +8,7 @@
 
     <script>
       var main_data = {
-          prime_list: [2,3,5,7,11,13,17,19]
+          prime_list: [2,3,5,7,11,13,17,19],
       }
     </script>
 
@@ -16,9 +16,15 @@
       (h1 Prime Numbers)
 
       (table
-        (FORINDEX prime_list
-          (tr (td (. I) (: style "color: white; background: blue;"))
-              (th (. X) (: id (.. prime_ (. I)) style "font-size: 180%")))))
+        (FOR (prime_list $i $p)
+          (tr (td $i (: style "color: white; background: blue;"))
+              (th $p (: id prime_$i style "font-size: 180%")))))
+
+      (table
+        (FOR (20 0 3 $n) (tr (td test_$n))))
+
+      (COMMENT table
+        (FOR prime_list (tr (td (. f)))))
 
       (CSS (th,td (padding 8px 20px)
                   (border-bottom 1px solid black))

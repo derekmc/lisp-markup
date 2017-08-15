@@ -274,7 +274,7 @@ function defineExports(){
                 if(Array.isArray(x)){
                     var result = markupConverter(x, data);
                     if(typeof result == "object" && result.constructor == ({}).constructor){
-                        console.log("attributes ", result);
+                        //console.log("attributes ", result);
                         for(var k in result){
                             var property_value = result[k];
                             if(Array.isArray(property_value)){
@@ -409,16 +409,29 @@ function defineMacros(){
         return result_parts.join('');
  
     }
+
     // if l[1] is array, it is a a list of FOR parameters,
     // otherwise, l[1] is the the only FOR parameter.
     // if the first parameter is not '$' prefixed, it is a selector,
     // the first $ prefixed parameter is the index or key.
     // the second $ prefixed parameter is the value.
     // if there is only 1 $ prefixed parameter, the value is used as the data context.
+    //
+    // FOR: loop over data or range.
+    // (FOR (property) body)  // loop data context
+    // (FOR (property $ref) body)  // loop data context, ref is index or key.
+    // (FOR (property $ref $value) body)  // parent data context 
+    // (FOR ($ref) body)  // loop data context
+    // (FOR ($ref $value) body) // parent data context
+    // (FOR (count) body) // parent data context
+    // (FOR (start_n end_n) body) 
+    // (FOR (count $ref) body) 
+    // (FOR (start_n end_n $ref) body)
     function _for( l,data,markupConverter){
         var one = l[1];
         var params;
         var substitutions;
+        var int_regex = /^(0|[-]?[1-9][0-9]*)$/;
 
         if(l.length < 2){
             throw new Error("LispMarkup.macros.FOR: at least 1 argument required."); }
@@ -429,14 +442,25 @@ function defineMacros(){
             params = [one]; }
         if(params.length < 1){
             throw new Error("LispMarkup.macros.FOR: param list is empty."); }
-        if(params.length > 3){
-            throw new Error("LispMarkup.macros.FOR: param list exceeds the 3 maximum allowed entries."); }
+        if(params.length > 4){
+            throw new Error("LispMarkup.macros.FOR: param list exceeds 4 maximum entries."); }
 
         var index = 0;
         var loop_data = data;
-        // if first param is not $ prefixed, it selects the loop_data.
-        if(typeof params[index] != "string" || params[index][0] != "$"){
-            var context = params[index];
+        var start = null, end = null, incr = 1;
+        var p = params[index];
+        if(typeof p == "string"){
+            if(p.match(int_regex)){
+                ++index;
+                var n = parseInt(p);
+                if(n < 0){
+                    start = n; end = -1; }
+                else{
+                    start = 1; end = n; }}}
+
+        // if first param is not $ prefixed, it selects loop_data.
+        if(index == 0 && (typeof p != "string" || p[0] != "$")){
+            var context = p;
             ++index;
             if(loop_data === null || loop_data === undefined){
                 throw new Error("LispMarkup.macros.FOR: data is not defined"); }
@@ -447,10 +471,26 @@ function defineMacros(){
             else{
                 throw new Error("LispMarkup.macros.FOR: invalid type for context argument"); }
         }
-        if(!Array.isArray(loop_data) && typeof loop_data != "object"){
+
+        // check for integer end bounds and increment
+        if(start !== null){
+            if(index < params.length){
+                var p = params[index];
+                if(p.toString().match(int_regex)){
+                    ++index;
+                    start = end;
+                    end = parseInt(p); 
+                    if(index < params.length){
+                        var p = params[index];
+                        if(p.match(int_regex)){
+                            ++index;
+                            incr = parseInt(p); }}}}
+        }
+        else if(!Array.isArray(loop_data) && typeof loop_data != "object"){
             throw new Error("LispMarkup.macros.FOR: loop_data context can't be iterated over, not array or object"); }
 
         var ref_name = null, val_name = null;
+        // ref variable
         if(index < params.length){
             var p = params[index]; // index or key
             ++index;
@@ -458,14 +498,18 @@ function defineMacros(){
                 throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop index or key"); }
             ref_name = p.substr(1);
         }
-        if(index < params.length){
+        // value variable
+        if(start == null && index < params.length){
             var p = params[index];
             ++index;
             if(typeof p != "string" || p[0] != "$"){
-                throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop index or key"); }
+                throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop number"); }
             val_name = p.substr(1);
         }
     
+        if(index != params.length){
+            throw new Error("LispMarkup.macros.FOR: not all arguments were used."); }
+
         var rest = l.slice(2);
         var result_parts = [];
         var vars = {};
@@ -477,7 +521,13 @@ function defineMacros(){
         else if(val_name !== null){
             throw new Error("LispMarkup.macros.FOR: loop value variable unexpectedly assigned when loop reference variable was not."); }
 
-        if(Array.isArray(loop_data)){
+        if(start !== null){
+            if(start > end && incr > 0){
+                incr = -incr; }
+            //console.log("bounds: " + start + ", " +  end + ", " + incr);
+            for(var i=start; incr>0? i<=end : i>=end; i += incr){
+                loop.push([i, null]); }}
+        else if(Array.isArray(loop_data)){
             for(var i=0; i<loop_data.length; ++i){
                 loop.push([i+1, loop_data[i]]); }}
         else if(typeof loop_data == "object"){
@@ -487,13 +537,15 @@ function defineMacros(){
         for(var i=0; i<loop.length; ++i){
             var ref = loop[i][0];
             var val = loop[i][1];
+            //console.log(ref_name, ref);
             var current_data = data;
             if(ref_name !== null){
                 vars[ref_name] = ref; }
-            if(val_name !== null){
-                vars[val_name] = val; }
-            else{
-                current_data = val; }
+            if(val !== null){
+                if(val_name !== null){
+                    vars[val_name] = val; }
+                else{
+                    current_data = val; }}
             //console.log(vars);
             var processed_rest = ref_name? substitute(rest, vars) : rest;
             for(var j=0; j<processed_rest.length; ++j){
