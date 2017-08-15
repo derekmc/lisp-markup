@@ -437,7 +437,48 @@ function defineMacros(){
                 throw new Error("LispMarkup.macros.LET: variable '" + k + "' assigned previously in this let statement."); }
             substitutions[k.substr(1)] = v;
         }
-        // TODO substitutions
+        
+        // do substitutions
+        substitute(l.slice(Array.isArray(one)? 2 : 3), substitutions);
+
+        function substitute(x, vars){
+            if(Array.isArray(x)){
+                for(var i=0; i<x.length; ++i){
+                    x[i] = substitute(x[i], vars); }
+                return x; }
+            if(typeof x == "object"){
+                for(var k in x){
+                    x[k] = substitute(x[k], vars); }
+                return x; }
+            if(typeof x == "string"){
+                var result_parts = [];
+                for(var i=0,k=0; i<x.length; ++i){
+                    var c = x[i];
+                    if(c=='\\') ++i;
+                    if(c=='"'){
+                        while(++i<x.length && x[i]!='"'){
+                            if(x[i]=='\\') ++i; }}
+                    if(c=='\''){
+                        while(++i<x.length && x[i]!='\''){
+                            if(x[i]=='\\') ++i; }}
+                    if(c=='$'){
+                        var j = i+1;
+                        var name = '';
+                        if(++i<x.length && x[i] == '{'){
+                            while(++i<x.length && x[i] != '}');
+                            name = x.substr(j+1,i-1); }
+                        else{
+                            while(++i<x.length && x[i].match(/[0-9A-Za-z]/));
+                            name = x.substr(j,i); }
+                        if(name.length && substitutions.hasOwnProperty(name)){
+                            results.push(x.substr(k,j), substitutions[name]);
+                            k = i; }
+                    }
+                }
+                return result_parts.join('');
+            }
+            return x;
+        }
     }
     function foreach( l,data,markupConverter){
         var result_parts = [];
