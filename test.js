@@ -71,12 +71,13 @@ function test(){
                      ['td.firstname', ['GET', 0]]]]]]
     ]
  
-    var lisp_template = '(#main (LET ($title "Test Title") (h1.maintitle $title))' +
-                        '       (table.namelist' +
-                        '         (tr (th Last Name) (th First Name))' +
-                        //'         (tr (th NameList) (td (STRINGIFY namelist)))' +
-                        '         (WITH namelist' +
-                        '           (FOREACH (tr (td.lastname (GET 1)) (td.firstname (GET 0)))))))';
+    var lisp_template = '(#main (LET ($title (GET title)) (h1.maintitle $title)' +
+                        '         (table.namelist' +
+                        '           (tr (th Last Name) (th First Name))' +
+                        //'           (tr (th NameList) (td (STRINGIFY namelist)))' +
+                        '           (WITH namelist' +
+                        '             (FOREACH (tr (td.lastname (GET 1)) (td.firstname (GET 0))))))' +
+                        '         (hr) (i $title)))';
     var physics_names_data = {
        title: "Physicist Names",
        bg: "black",
@@ -91,12 +92,16 @@ function test(){
        ]
     }
 
-    //var html = LispMarkup.toHtml( namelist_template,physics_names_data);
-    //var tree = LispMarkup.lispTree(lisp_template);
-    //console.log(JSON.stringify(tree));
-    var html = LispMarkup.toHtml(lisp_template, physics_names_data);
-    //var template = LispMarkup.compileTemplate(lisp_template);
-    //var html = template(physics_names_data);
+    if(Math.random() < 0.5){
+        var html = LispMarkup.toHtml(lisp_template, physics_names_data);
+    }
+    else{
+        //var html = LispMarkup.toHtml( namelist_template,physics_names_data);
+        var tree = LispMarkup.lispTree(lisp_template);
+        console.log(JSON.stringify(tree));
+        var template = LispMarkup.compileTemplate(namelist_template);
+        var html = template(physics_names_data);
+    }
 
     //console.log(html);
     return html;

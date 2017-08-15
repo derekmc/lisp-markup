@@ -429,8 +429,14 @@ function defineMacros(){
             throw new Error("LispMarkup.macros.LET: assignment list must be even length."); }
         for(var i=0; i<assign_list.length; i+=2){
             var k = assign_list[i], v = assign_list[i+1];
+            if(Array.isArray(v)){
+                v = markupConverter(v, data); }
+            if(typeof k == "function"){
+                v = v(data); }
             if(typeof k != "string" || typeof v != "string"){
-                throw new Error("LispMarkup.macros.LET: currently, on strings are supported in assignment statements."); }
+                throw new Error("LispMarkup.macros.LET: variable name was not a string."); }
+            if(typeof k != "string" || typeof v != "string"){
+                throw new Error("LispMarkup.macros.LET: variable value not a string or convertible to string"); }
             if(k.charAt(0) != '$'){
                 throw new Error("LispMarkup.macros.LET: variable must begin with '$'"); }
             if(substitutions.hasOwnProperty(k)){
@@ -442,7 +448,7 @@ function defineMacros(){
         var l = substitute(l.slice(Array.isArray(one)? 2 : 3), substitutions);
         var result_parts = [];
         for(var i=0; i<l.length; ++i){
-            result_parts.push(markupConverter(l, data).toString()); }
+            result_parts.push(markupConverter(l[i], data).toString()); }
         return result_parts.join(''); 
 
         function substitute(x, vars){
@@ -459,9 +465,7 @@ function defineMacros(){
                 for(var i=0,k=0; i<x.length; ++i){
                     var c = x[i];
                     if(c=='\\') ++i;
-                    if(c=='"'){
-                        while(++i<x.length && x[i]!='"'){
-                            if(x[i]=='\\') ++i; }}
+                    //  Variable substitution not performed in single quoted strings.
                     if(c=='\''){
                         while(++i<x.length && x[i]!='\''){
                             if(x[i]=='\\') ++i; }}
@@ -479,6 +483,7 @@ function defineMacros(){
                             k = i; }
                     }
                 }
+                result_parts.push(x.substr(k));
                 return result_parts.join('');
             }
             return x;
