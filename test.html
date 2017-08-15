@@ -17,8 +17,8 @@
 
       (table
         (FOR (prime_list $i $p)
-          (tr (td $i (: style "color: white; background: blue;"))
-              (th $p (: id prime_$i style "font-size: 180%")))))
+          (tr (td ${i} (: style "color: white; background: blue;"))
+              (th ${p} (: id prime_$i style "font-size: 180%")))))
 
       (table
         (FOR (20 0 3 $n) (tr (td test_$n))))

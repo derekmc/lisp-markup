@@ -585,7 +585,7 @@ function defineMacros(){
                 throw new Error("LispMarkup.macros.LET: variable must begin with '$'"); }
             if(substitutions.hasOwnProperty(k)){
                 throw new Error("LispMarkup.macros.LET: variable '" + k + "' assigned previously in this let statement."); }
-            substitutions[k.substr(1)] = v;
+            substitutions[k.substring(1)] = v;
         }
         
         // do substitutions
@@ -626,18 +626,20 @@ function defineMacros(){
                     if(i<x.length && x[i] == '{'){
                         do ++i; 
                         while(i<x.length && x[i] != '}');
-                        name = x.substr(j+1,i-1); }
+                        name = x.substring(j+1,i);
+                        ++i;
+                        console.log(name); }
                     else{
                         while(i<x.length && x[i].match(/[_0-9A-Za-z]/)){
                             ++i; }
-                        name = x.substr(j,i); }
+                        name = x.substring(j,i); }
                     if(name.length && vars.hasOwnProperty(name)){
                         //console.log("substituting ", name, vars[name]);
-                        result_parts.push(x.substr(k,j-1), vars[name]);
+                        result_parts.push(x.substring(k,j-1), vars[name]);
                         k = i; }
                 }
             }
-            result_parts.push(x.substr(k));
+            result_parts.push(x.substring(k));
             return result_parts.join('');
         }
         return x;
