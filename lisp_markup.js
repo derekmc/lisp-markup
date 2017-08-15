@@ -76,6 +76,7 @@ function defineExports(){
     exports.toHtml = toHtml;
     exports.compileTemplate = compileTemplate;
     exports.addMacro = addMacro;
+    exports.addFunction = addFunction;
     exports.hasMacro = hasMacro;
 
     var macros = defineMacros();
@@ -88,6 +89,19 @@ function defineExports(){
 
 
 
+    function addFunction(function_name, func){
+        addMacro(function_name, makeMacro(func));
+        function makeMacro(f){
+            return function( l,data,markupConverter){
+                var args = [];
+                for(var i=1; i<l.length; ++i){
+                    args.push(markupConverter(l[i], data)); }
+                console.log("function", function_name, args);
+                return f.apply(null, args);
+            }
+        }
+    }
+        
     function addMacro(macro_name, macro_func){
         if(macros.hasOwnProperty(macro_name)){
             throw new Error("LispMarkup.addMacro: macro '" + macro_name + "' already exists."); }
@@ -183,7 +197,8 @@ function defineExports(){
             if(c == "\\"){
                 if(i==s.length-1){
                     throw new Error("lispTree: '\\' is last character"); }
-                ++i; continue; }
+                s = s.substring(0,i) + s.substring(i+1);
+                continue; }
             if(c == "\'"){
                 var standalone = (i==j);
                 while(s[++i] != "\'"){
@@ -264,7 +279,8 @@ function defineExports(){
                 else if(!macro_result){
                     return ""; }
                 else{
-                    throw new Error("LispMarkup markup conversion function: macro returned value with invalid type."); }
+                    return macro_result.toString(); }
+                    //throw new Error("LispMarkup markup conversion function: macro returned value with invalid type."); }
                 // returned
             }
 
@@ -325,9 +341,6 @@ function defineMacros(){
     var macros = {};
     macros.WITH = _with;
     macros.COMMENT = comment;
-    macros.FOREACH = foreach;
-    macros.FORINDEX = forindex;
-    macros.FOR = foreach;
     macros.CONCAT = concat;
     macros.CONCAT_SPACE = concat_space;
     macros.GET = get;
@@ -379,37 +392,6 @@ function defineMacros(){
     function comment( l,data,markupConverter){
         return "";
     }
-    function forindex( l,data,markupConverter){
-        var result_parts = [];
-        var datalist = [];
-        var _l;
-        if(l.length == 2){
-            datalist = data;
-            _l = l[1]; }
-        else if(l.length == 3){
-            var listgetter = l[1];
-            _l = l[2];
-            if(typeof listgetter == "function"){
-                datalist = listgetter(data); }
-            else if(typeof listgetter == "string"){
-                datalist = data[listgetter]; }}
-        else{
-            throw new Error("LispMarkup.macros.foreach invalid number list of arguments"); }
-        
-        for(var i=0; i<datalist.length; ++i){
-            var item = datalist[i];
-            var data_obj = {
-                INDEX: i+1,
-                VALUE: item,
-                I: i+1,
-                VAL: item,
-                X: item
-            }
-            result_parts.push(markupConverter( _l,data_obj)); }
-        return result_parts.join('');
- 
-    }
-
     // if l[1] is array, it is a a list of FOR parameters,
     // otherwise, l[1] is the the only FOR parameter.
     // if the first parameter is not '$' prefixed, it is a selector,
@@ -644,28 +626,6 @@ function defineMacros(){
         }
         return x;
     }
-    function foreach( l,data,markupConverter){
-        var result_parts = [];
-        var datalist = [];
-        var _l;
-        if(l.length == 2){
-            datalist = data;
-            _l = l[1]; }
-        else if(l.length == 3){
-            var listgetter = l[1];
-            _l = l[2];
-            if(typeof listgetter == "function"){
-                datalist = listgetter(data); }
-            else if(typeof listgetter == "string"){
-                datalist = data[listgetter]; }}
-        else{
-            throw new Error("LispMarkup.macros.FORINDEX: invalid number list of arguments"); }
-        
-        for(var i=0; i<datalist.length; ++i){
-            var item = datalist[i];
-            result_parts.push(markupConverter( _l,item)); }
-        return result_parts.join('');
-    }
     function concat( l,data,markupConverter){
         var result_parts = [''];
         for(var i=1; i<l.length; ++i){
@@ -685,7 +645,8 @@ function defineMacros(){
         if(l.length == 1){
             return data.toString(); }
         else if(l.length == 2){
-            return data[l[1]].toString(); }
+            
+            return data[l[1]]? data[l[1]].toString() : ""; }
         else if(l.length == 3){
             var value = data[l[1]];
             if(value === null || value === undefined){

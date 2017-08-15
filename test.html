@@ -9,8 +9,8 @@
     <script>
       var main_data = {
           prime_list: [2,3,5,7,11,13,17,19],
-          f: function(x){ return x*x; }
       }
+      LispMarkup.addFunction('square', function(x){ return x*x; });
     </script>
 
     <script id="main-template" type="text/lisp-markup">
@@ -21,11 +21,10 @@
           (tr (th $i)
               (td#prime_$i (.)))))
 
+      (h1 Prime Squares)
       (table
-        (FOR (20 0 3 $num) (tr (td test_${num}))))
-
-      (COMMENT TODO: table
-        (FOR prime_list (tr (td (. f)))))
+        (FOR (prime_list) (tr (th square\((.) &nbsp;\))
+                              (td (square (.))))))
 
       (CSS (th (color white) (background blue))
            (td (font-size 180%) (text-align center))

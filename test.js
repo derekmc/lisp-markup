@@ -63,10 +63,10 @@ function test(){
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
             [m.WITH, 'namelist',
-              ['FOREACH',
+              ['FOR', '$',
                 ['tr', ['td.lastname', [m.WITH, 1, [m.GET]]],
                        ['td.firstname', [m.WITH, 0, [m.GET]]]]]],
-            ['FOREACH', 'namelist',
+            ['FOR', 'namelist',
               ['tr', ['td.lastname', ['GET', 1]],
                      ['td.firstname', ['GET', 0]]]]]]
     ]
