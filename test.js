@@ -71,10 +71,10 @@ function test(){
                      ['td.firstname', ['GET', 0]]]]]]
     ]
  
-    var lisp_template = '(#main (h1.maintitle (GET title))' +
+    var lisp_template = '(#main (LET ($title "Test Title") (h1.maintitle $title))' +
                         '       (table.namelist' +
                         '         (tr (th Last Name) (th First Name))' +
-                        '         (tr (th NameList) (td (STRINGIFY namelist)))' +
+                        //'         (tr (th NameList) (td (STRINGIFY namelist)))' +
                         '         (WITH namelist' +
                         '           (FOREACH (tr (td.lastname (GET 1)) (td.firstname (GET 0)))))))';
     var physics_names_data = {
@@ -91,10 +91,10 @@ function test(){
        ]
     }
 
-    var html = LispMarkup.toHtml( namelist_template,physics_names_data);
+    //var html = LispMarkup.toHtml( namelist_template,physics_names_data);
     //var tree = LispMarkup.lispTree(lisp_template);
     //console.log(JSON.stringify(tree));
-    //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
+    var html = LispMarkup.toHtml(lisp_template, physics_names_data);
     //var template = LispMarkup.compileTemplate(lisp_template);
     //var html = template(physics_names_data);
 

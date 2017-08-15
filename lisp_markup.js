@@ -439,7 +439,11 @@ function defineMacros(){
         }
         
         // do substitutions
-        substitute(l.slice(Array.isArray(one)? 2 : 3), substitutions);
+        var l = substitute(l.slice(Array.isArray(one)? 2 : 3), substitutions);
+        var result_parts = [];
+        for(var i=0; i<l.length; ++i){
+            result_parts.push(markupConverter(l, data).toString()); }
+        return result_parts.join(''); 
 
         function substitute(x, vars){
             if(Array.isArray(x)){
@@ -471,7 +475,7 @@ function defineMacros(){
                             while(++i<x.length && x[i].match(/[0-9A-Za-z]/));
                             name = x.substr(j,i); }
                         if(name.length && substitutions.hasOwnProperty(name)){
-                            results.push(x.substr(k,j), substitutions[name]);
+                            result_parts.push(x.substr(k,j-1), substitutions[name]);
                             k = i; }
                     }
                 }
