@@ -1,13 +1,10 @@
-
-Outstanding Liabilities
-==========================
-
-New Assets
-==========================
-
-Implemented Assets
-==========================
-
-
-Cleared Liabilities
-==========================
+lisp-markup: todo.txt
+==== Outstanding Liabilities ====
+ - loop $ref (index or key) and $obj variables only on end, may not be best choice.
+==== New Assets ====
+ - rename 'markupConverter' inversion of control parameter function to 'toMarkup'.
+ - IF macro, conditionals.
+ - better demos, tests, doc, etc.
+==== Implemented Assets ====
+==== Cleared Liabilities ====
+==== Wish List ====
