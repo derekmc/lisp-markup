@@ -353,6 +353,7 @@ function defineMacros(){
     macros.COMMENT = comment;
     macros.CONCAT = concat;
     macros.CONCAT_SPACE = concat_space;
+    macros.IF = _if;
     macros.GET = get;
     macros.CSS = css;
     macros.LET = _let;
@@ -360,6 +361,7 @@ function defineMacros(){
     macros.STRINGIFY = _stringify;
     macros.PROPERTIES = properties;
     macros.PROPS = properties;
+    macros["?"] = _if;
     macros["."] = get;
     macros[".."] = concat;
     macros["..."] = concat_space;
@@ -380,7 +382,27 @@ function defineMacros(){
         if(l.length == 2){
             return JSON.stringify(data[l[1]]); }
         throw new Error("LispMarkup.macros.STRINGIFY: only 0 or 1 arguments allowed.");
-
+    }
+    function _if(l,data,markupConverter){
+        var result_parts = [];
+        if(l.length < 4){
+            throw new Error("LispMarkup.macros._if not enough list arguments"); }
+        var test = l[1];
+        var test_result = false;
+        if(typeof test == "function"){
+            test_result = test(data); }
+        else if(typeof test == "string" || typeof context == "number"){
+            test_result = data[test]; }
+        else if(typeof test == "boolean"){
+            test_result = test; }
+        else if(!isNaN(test)){
+            test_result = test != 0; }
+        else{
+            throw new Error("LispMarkup.macros._if invalid type for context argument"); }
+        if(test_result){
+            return markupConverter(l[2], data, markupConverter); }
+        else{
+            return markupConverter(l[3], data, markupConverter); }
     }
     function _with( l,data,markupConverter){
         var result_parts = [];
