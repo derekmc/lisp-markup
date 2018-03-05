@@ -313,6 +313,16 @@ function defineExports(){
                             props[k] = property_value; }
                         else if(property_value === null || property_value === undefined){
                             props[k] = null; }
+                        else if(typeof property_value == "function"){
+                            // view function
+                            var view = property_value;
+                            var view_result = view(data);
+                            if(typeof view_result == "string"){
+                                props[k] = view_result + " "; }
+                            else if(!view_result){
+                                props[k] = ""; }
+                            else{
+                                throw new Error("LispMarkup markup conversion function: template returned value with invalid type."); }}
                         else{
                             throw new Error("LispMarkup: illegal property value type."); }}}
                 else if(typeof x == "function"){

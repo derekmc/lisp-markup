@@ -12,10 +12,15 @@ exports.test_example = test();
 console.log(exports.test_example);
 //exports.test_example = `<h1>hey</h1>`;
 
+function randomColor(){
+    var color_list = ["#f00", "#0f0", "#00f", "#aa0", "#a0a", "#0aa"];
+    return color_list[Math.floor(color_list.length * Math.random())];
+}
+
 function test(){
     var m = LispMarkup.macros;
 
-    var namelist_template = [
+    var json_template = [
         [m.CSS, 
           ['body',
             ['background', [m.GET, 'bg']],
@@ -32,7 +37,7 @@ function test(){
             ['margin-right', 'auto']],
           ['h1.maintitle',
             ['color', '#ffffff'],
-            ['border', '3px', 'solid', 'green'],
+            ['border', '3px', 'solid', 'white'],
             ['background-color', [m.GET, 'this_is_a_fake_property', [m.GET, 'titlebg']]],
             ['border-radius', [m.CONCAT, [m.GET, 'border_radius'], 'px']],//function(data){
                 //return data.border_radius + "px"; }],
@@ -58,7 +63,7 @@ function test(){
         ],
         [m.COMMENT, ['h1', {style:'color:white;'}, 'All this is in a comment and will be omitted.']],
         ['#main',
-          ['h1.maintitle', function(data){ return data.title; }],
+          ['h1.maintitle', function(data){ return data.title; }, {style: function(){ return "background: " + randomColor() + ";"}}],
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
@@ -92,11 +97,12 @@ function test(){
        ]
     }
 
-    if(true){ //Math.random() < 0.5){
-        var html = LispMarkup.toHtml(lisp_template, physics_names_data);
+    if(true){ //Math.random() < 0.5)
+        var html = LispMarkup.toHtml(json_template, physics_names_data);
+        //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
     }
     else{
-        //var html = LispMarkup.toHtml( namelist_template,physics_names_data);
+        //var html = LispMarkup.toHtml( json_template,physics_names_data);
         var tree = LispMarkup.lispTree(lisp_template);
         console.log(JSON.stringify(tree));
         var template = LispMarkup.compileTemplate(namelist_template);
