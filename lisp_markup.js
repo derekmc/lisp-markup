@@ -391,7 +391,7 @@ function defineMacros(){
         var test_result = false;
         if(typeof test == "function"){
             test_result = test(data); }
-        else if(typeof test == "string" || typeof context == "number"){
+        else if(typeof test == "string" || typeof test == "number"){
             test_result = data[test]; }
         else if(typeof test == "boolean"){
             test_result = test; }
