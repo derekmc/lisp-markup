@@ -392,7 +392,7 @@ function defineMacros(){
         if(typeof test == "function"){
             test_result = test(data); }
         else if(typeof test == "string" || typeof test == "number"){
-            test_result = data[test]; }
+            test_result = data? data[test] : false; }
         else if(typeof test == "boolean"){
             test_result = test; }
         else if(!isNaN(test)){
