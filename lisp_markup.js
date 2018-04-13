@@ -59,7 +59,8 @@ else{
 function defineExports(){
     var exports = {};
     // TODO use real typecheck module
-    function T(){}
+    function T(){ return arguments[arguments.length-1]; }
+    var D = defaultValue;
 
     var lispToHtml = customTagMarkupConverter(htmlTagHandler); 
     /* htmlTagHandler: process html tags
@@ -88,6 +89,12 @@ function defineExports(){
     return exports;
 
 
+
+    function defaultValue(default_value, value){
+        if(value === null || value === undefined){
+            return default_value; }
+        return value;
+    }
 
     function addFunction(function_name, func){
         addMacro(function_name, makeMacro(func));
@@ -251,7 +258,7 @@ function defineExports(){
         return markupConverter;  
         function markupConverter(l, data){
             T([], "", 0, l);
-            T({}, [], undefined, data);
+            data = T({}, [], D({}, data));
             var props = {};
             var first = l[0];
             var tagname = null;

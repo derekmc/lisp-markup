@@ -17,12 +17,18 @@ var LispMarkupBrowser = {};
     LispMarkupBrowser.updateAll = updateAll;
     LispMarkupBrowser.updateContainers = updateContainers;
     LispMarkupBrowser.getContainers = getContainers;
+    LispMarkup.addMacro("DEFINE", macroDefineTemplate);
+    LispMarkup.addMacro("DEF", macroDefineTemplate);
 
     // -------- Last Procedural Statement in Module -----------
     window.addEventListener("load", browserInit);
     return;
 
+    // null or undefined deletes the template definition
     function setContentTemplate(template_name, template){
+        if(template === null || template === "undefined"){
+            delete templates[template_name];
+            return; }
         if(typeof template == "string"){
             template = LispMarkup.compileTemplate(template); }
         if(typeof template != "function"){
@@ -32,6 +38,21 @@ var LispMarkupBrowser = {};
 
     function getContentTemplate(template_name){
         return templates[template_name];
+    }
+
+    // macro for defining a template
+    // (DEF template_name template_contents...)
+    // online processes the rest of the template definition if LispMarkupBrowser
+    // does not already have template with name 'template_name'.
+    function macroDefineTemplate( l,data,markupConverter){
+        if(l.length < 2){
+            throw new Error("LispMarkupBrowser.macroDefineTemplate: at least 2 list entries required in template definition."); }
+        var template_name = l[1];
+        if(templates.hasOwnProperty(template_name)){
+            console.warn("LispMarkupBrowser.macroDefineTemplate: template '" + template_name + "' already defined."); }
+        var rest_of_list = l.slice(2);
+        var template = LispMarkup.compileTemplate(rest_of_list);
+        templates[template_name] = template;
     }
 
     function getContainers(container_name){
