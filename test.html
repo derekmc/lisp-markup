@@ -24,12 +24,12 @@
       (table
         (FOR (prime_list $i) 
           (tr (th $i)
-              (td#prime_$i (.)))))
+              (td#prime_$i (@)))))
 
       (h1 Prime Squares)
       (table
-        (FOR (prime_list) (tr (th square\((.) &nbsp;\))
-                              (td (square (.))))))
+        (FOR (prime_list) (tr (th square\((@) &nbsp;\))
+                              (td (square (@))))))
       (#asdf-container)
 
       (DEF asdf (h2 ASDF)
@@ -37,12 +37,14 @@
 
       (COMMENT DEF mult_table
         (h1 Multiplication Table)
-          (table
-            (tr (th x) (FOR ((. low 1) (. high 10) $x) (th $x)))
-            (FOR ((. low 1) (. high 10) $y) 
-              (tr (th $y) (FOR ((. low 1) (. high 10) $x) (td (* $x $y)))))))
+        (table
+          (= ($low (@ low 1)
+              $high (@ high 10))
+            (tr (th x) (FOR $x ($low $high) (th $x)))
+            (FOR $y (($ low 1) (@ high 10) $y) 
+              (tr (th $y) (FOR $x (@low @high) (td (* $x $y))))))))
 
-      (COMMENT #mult_table-container)
+      (## #mult_table-container)
 
       (CSS (th (color white) (background blue))
            (td (font-size 180%) (text-align center))

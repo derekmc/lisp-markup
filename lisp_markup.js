@@ -378,10 +378,10 @@ function defineMacros(){
     macros.PROPERTIES = properties;
     macros.PROPS = properties;
     macros["?"] = _if;
-    macros["."] = get;
+    macros["@"] = get;  // @varname for inline get.
     macros[".."] = concat;
     macros["..."] = concat_space;
-    macros["//"] = comment;
+    macros["##"] = comment;
     macros[":"] = properties;
     macros["="] = _let;
     return macros;
