@@ -55,12 +55,19 @@ else{
 }
 
 
+var D = defaultValue;
+function defaultValue(default_value, value){
+    if(value === null || value === undefined){
+        return default_value; }
+    return value;
+}
+
+
 
 function defineExports(){
     var exports = {};
     // TODO use real typecheck module
     function T(){ return arguments[arguments.length-1]; }
-    var D = defaultValue;
 
     var lispToHtml = customTagMarkupConverter(htmlTagHandler); 
     /* htmlTagHandler: process html tags
@@ -90,11 +97,6 @@ function defineExports(){
 
 
 
-    function defaultValue(default_value, value){
-        if(value === null || value === undefined){
-            return default_value; }
-        return value;
-    }
 
     function addFunction(function_name, func){
         addMacro(function_name, makeMacro(func));
@@ -467,9 +469,11 @@ function defineMacros(){
             throw new Error("LispMarkup.macros.FOR: param list exceeds 4 maximum entries."); }
 
         var index = 0;
-        var loop_data = data;
+        var loop_data = D({}, data);
         var start = null, end = null, incr = 1;
         var p = params[index];
+        if(Array.isArray(p)){
+            p = markupConverter(p, data); }
         if(typeof p == "string"){
             if(p.match(int_regex)){
                 ++index;
@@ -491,23 +495,29 @@ function defineMacros(){
                 loop_data = loop_data[context]; }
             else{
                 throw new Error("LispMarkup.macros.FOR: invalid type for context argument"); }
+            loop_data = D({}, loop_data);
         }
 
         // check for integer end bounds and increment
         if(start !== null){
             if(index < params.length){
                 var p = params[index];
+                if(Array.isArray(p)){
+                    p = markupConverter(p, data); }
                 if(p.toString().match(int_regex)){
                     ++index;
                     start = end;
                     end = parseInt(p); 
                     if(index < params.length){
                         var p = params[index];
+                        if(Array.isArray(p)){
+                            p = markupConverter(p, data); }
                         if(p.match(int_regex)){
                             ++index;
                             incr = parseInt(p); }}}}
         }
         else if(!Array.isArray(loop_data) && typeof loop_data != "object"){
+            console.error("not iterable", loop_data);
             throw new Error("LispMarkup.macros.FOR: loop_data context can't be iterated over, not array or object"); }
 
         var ref_name = null, val_name = null;
@@ -516,6 +526,7 @@ function defineMacros(){
             var p = params[index]; // index or key
             ++index;
             if(typeof p != "string" || p[0] != "$"){
+                console.error("expected '$' prefixed variable", p, index); 
                 throw new Error("LispMarkup.macros.FOR: expected '$' prefixed variable name for loop index or key"); }
             ref_name = p.substr(1);
         }

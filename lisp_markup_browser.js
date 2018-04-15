@@ -45,6 +45,7 @@ var LispMarkupBrowser = {};
     // online processes the rest of the template definition if LispMarkupBrowser
     // does not already have template with name 'template_name'.
     function macroDefineTemplate( l,data,markupConverter){
+        console.log("DEF", l);
         if(l.length < 2){
             throw new Error("LispMarkupBrowser.macroDefineTemplate: at least 2 list entries required in template definition."); }
         var template_name = l[1];
@@ -52,7 +53,11 @@ var LispMarkupBrowser = {};
             console.warn("LispMarkupBrowser.macroDefineTemplate: template '" + template_name + "' already defined."); }
         var rest_of_list = l.slice(2);
         var template = LispMarkup.compileTemplate(rest_of_list);
-        templates[template_name] = template;
+        templates[template_name] = function(data){
+            console.log("DEF template", data);
+            return template(data);
+        }
+        console.log(templates);
     }
 
     function getContainers(container_name){

@@ -12,6 +12,10 @@
       }
       LispMarkup.addFunction('square', function(x){ return x*x; });
       LispMarkup.addFunction('*', function(x,y){ return x*y; });
+      /*setTimeout(LispMarkupBrowser.updateAll, 2000);
+      function after(){
+          LispMarkupBrowser.update("mult_table", {});
+      }*/
     </script>
 
     <script id="main-template" type="text/lisp-markup">
@@ -26,9 +30,12 @@
       (table
         (FOR (prime_list) (tr (th square\((.) &nbsp;\))
                               (td (square (.))))))
+      (#asdf-container)
 
+      (DEF asdf (h2 ASDF)
+        (ul (FOR (1 10 $x) (li $x))))
 
-      (DEF mult_table
+      (COMMENT DEF mult_table
         (h1 Multiplication Table)
           (table
             (tr (th x) (FOR ((. low 1) (. high 10) $x) (th $x)))
