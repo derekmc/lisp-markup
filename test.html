@@ -42,7 +42,7 @@
               $high (@ high 10))
             (tr (th x) (FOR $x ($low $high) (th $x)))
             (FOR $y (($ low 1) (@ high 10) $y) 
-              (tr (th $y) (FOR $x (@low @high) (td (* $x $y))))))))
+              (tr (th $y) (FOR $x (((@ low) (@ high))) (td (* $x $y))))))))
 
       (## #mult_table-container)
 
