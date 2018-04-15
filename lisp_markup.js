@@ -378,7 +378,7 @@ function defineMacros(){
     macros.PROPERTIES = properties;
     macros.PROPS = properties;
     macros["?"] = _if;
-    macros["@"] = get;  // @varname for inline get.
+    macros["@"] = get;  // @varname for inline get, (parse time syntactic sugar?)
     macros[".."] = concat;
     macros["..."] = concat_space;
     macros["##"] = comment;
