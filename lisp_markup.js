@@ -486,7 +486,7 @@ function defineMacros(){
 
         var ref_variable = null;
         var value_variable = null;
-        if(Array.isArray(variable_argument){
+        if(Array.isArray(variable_argument)){
             if(variable_argument.length == 0){}
             else if(variable_argument.length < 3){
                 var ref_variable_obj = variable_argument.length == 2? variable_argument[0] : null;
@@ -502,10 +502,12 @@ function defineMacros(){
                     logThrow("LispMarkup.macros.FOR: value variable declaration not a string.", ref_variable_obj); }
                 if(value_variable_obj[0] != "$"){
                     logThrow("LispMarkup.macros.FOR: reference variable should begin with '$'", ref_variable_obj); }
-                if(!variable_argument.match(variable_regex)){
-                    logThrow("LispMarkup.macros.FOR: variable name not valid", variable_argument); }
+                if(!value_variable_obj.match(variable_regex)){
+                    logThrow("LispMarkup.macros.FOR: variable name not valid", value_variable_obj); }
                 ref_variable = ref_variable_obj.substring(1);
                 value_variable = value_variable_obj.substring(1);
+                //console.log("ref_variable", ref_variable);
+                //console.log("value_variable", value_variable);
             }
             else{
                 logThrow("LispMarkup.macros.FOR: variable_argument list may not have more than 2 entries", variable_argument, l);
@@ -530,7 +532,7 @@ function defineMacros(){
         var increment = 1;
         var data_key = null;
         if(Array.isArray(range_or_data_argument)){
-            console.error("Array based ranges or data arguments not yet implemented.");
+            logThrow("Array based ranges or data arguments not yet implemented.");
         }
         else if(typeof range_or_data_argument == "string"){
             if(range_or_data_argument.match(int_regex)){
@@ -557,10 +559,11 @@ function defineMacros(){
         var result_parts = [];
         var var_substitutions = {};
         var loop = [];
+        var loop_data = null;
         if(ref_variable !== null){
             var_substitutions[ref_variable] = ""; }
-        if(val_variable !== null){
-            var_substitutions[val_variable] = ""; }
+        if(value_variable !== null){
+            var_substitutions[value_variable] = ""; }
         //else if(val_name !== null){
             //logThrow("LispMarkup.macros.FOR: loop value variable unexpectedly assigned when loop reference variable was not."); }
 
@@ -572,27 +575,29 @@ function defineMacros(){
             //console.log("bounds: " + start + ", " +  end + ", " + incr);
             for(var i=start; increment>0? i<=end : i>=end; i += increment){
                 loop.push([i, i]); }}
-        else if(Array.isArray(loop_data)){
-            for(var i=0; i<loop_data.length; ++i){
-                loop.push([i+1, loop_data[i]]); }}
-        else if(typeof loop_data == "object"){
-            for(var k in loop_data){
-                loop.push([k, loop_data[k]]); }}
+        else{
+            var loop_data = D({}, data? data[data_key] : null);
+            if(Array.isArray(loop_data)){
+                for(var i=0; i<loop_data.length; ++i){
+                    loop.push([i+1, loop_data[i]]); }}
+            else if(typeof loop_data == "object"){
+                for(var k in loop_data){
+                    loop.push([k, loop_data[k]]); }}}
 
         for(var i=0; i<loop.length; ++i){
             var ref = loop[i][0];
             var val = loop[i][1];
-            //console.log(ref_name, ref);
+            //console.log("ref, value: ", ref, val);
             var current_data = data;
             if(ref_variable !== null){
                 var_substitutions[ref_variable] = ref; }
             if(val !== null){
-                if(val_variable !== null){
-                    var_substitutions[val_variable] = val; }
+                if(value_variable !== null){
+                    var_substitutions[value_variable] = val; }
                 else{
                     current_data = val; }}
             //console.log(var_substitutions);
-            var processed_rest = (ref_variable !== null || val_variable !== null)? substitute(rest, var_substitutions) : rest;
+            var processed_rest = (ref_variable !== null || value_variable !== null)? substitute(rest, var_substitutions) : rest;
             for(var j=0; j<processed_rest.length; ++j){
                 result_parts.push(markupConverter(processed_rest[j], current_data)); }}
         return result_parts.join('');

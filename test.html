@@ -22,18 +22,20 @@
       (h1 Prime Numbers)
 
       (table
-        (FOR (prime_list $i) 
+        (FOR ($i $p) prime_list 
           (tr (th $i)
-              (td#prime_$i (@)))))
+              (td#prime_$i $p))))
 
       (h1 Prime Squares)
       (table
-        (FOR (prime_list) (tr (th square\((@) &nbsp;\))
-                              (td (square (@))))))
+        (FOR () prime_list
+          (tr (th square\((@) &nbsp;\))
+              (td (square (@))))))
+
       (#asdf-container)
 
-      (DEF asdf (h2 ASDF)
-        (ul (FOR (1 10 $x) (li $x))))
+      (COMMENT DEF asdf (h2 ASDF)
+        (ul (FOR $x (1 10) (li $x))))
 
       (COMMENT DEF mult_table
         (h1 Multiplication Table)
