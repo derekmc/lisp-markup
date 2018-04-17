@@ -67,21 +67,17 @@ function test(){
           ['table.namelist',
             ['tr', ['th', 'Last Name'],
                    ['th', 'First Name']],
-            [m.WITH, 'namelist',
-              ['FOR', '$',
-                ['tr', ['td.lastname', [m.WITH, 1, [m.GET]]],
-                       ['td.firstname', [m.WITH, 0, [m.GET]]]]]],
-            ['FOR', 'namelist',
+            ['FOR', [], 'namelist',
               ['tr', ['td.lastname', ['GET', 1]],
                      ['td.firstname', ['GET', 0]]]]]]
     ]
  
-    var lisp_template = '(#main (LET ($title (GET title)) (h1.maintitle $title)' +
+    var lisp_template = '(#main (LET ($title (@ title)) (h1.maintitle $title)' +
                         '         (table.namelist' +
                         '           (tr (th Index) (th Last Name) (th First Name))' +
                         //'           (tr (th NameList) (td (STRINGIFY namelist)))' +
                         //'           (WITH namelist' +
-                        '             (FOR (namelist $i) (tr (td $i) (td.lastname (GET 1)) (td.firstname (GET 0)))))' +
+                        '             (FOR () namelist (tr (td) (td.lastname (@ 1)) (td.firstname (@ 0)))))' +
                         '         (hr) (i $title)))';
     var physics_names_data = {
        title: "Physicist Names",
@@ -98,6 +94,7 @@ function test(){
     }
 
     if(true){ //Math.random() < 0.5)
+    //if(false){
         var html = LispMarkup.toHtml(json_template, physics_names_data);
         //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
     }
@@ -105,8 +102,10 @@ function test(){
         //var html = LispMarkup.toHtml( json_template,physics_names_data);
         var tree = LispMarkup.lispTree(lisp_template);
         console.log(JSON.stringify(tree));
-        var template = LispMarkup.compileTemplate(namelist_template);
+        var template = LispMarkup.compileTemplate(lisp_template);
         var html = template(physics_names_data);
+        /*
+        */
     }
 
     //console.log(html);
