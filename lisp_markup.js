@@ -552,8 +552,8 @@ function defineMacros(){
                 if(isNaN(arg0) || isNaN(arg1)){
                     logThrow("LispMarkup.macros.FOR: range start or end not a number."); }
                 is_range = true;
-                start = Number.parseFloat(arg0);
-                end = Number.parseFloat(arg1);
+                start = parseFloat(arg0);
+                end = parseFloat(arg1);
             }
             else if(range_or_data_list.length == 3){
                 var arg0 = range_or_data_list[0];
@@ -562,9 +562,9 @@ function defineMacros(){
                 if(isNaN(arg0) || isNaN(arg1) || isNaN(arg2)){
                     logThrow("LispMarkup.macros.FOR: range start or end not a number."); }
                 is_range = true;
-                start = Number.parseFloat(arg0);
-                end = Number.parseFloat(arg1);
-                increment = Number.parseFloat(arg2);
+                start = parseFloat(arg0);
+                end = parseFloat(arg1);
+                increment = parseFloat(arg2);
             }
             else{
                 logThrow("LispMarkup.macros.FOR: range argument may only have 3 entries.");
@@ -610,7 +610,7 @@ function defineMacros(){
             if(start < end && increment < 0){
                 increment = -increment; }
             for(var i=start; (increment>0)? i<=end : i>=end; i += increment){
-                var n = Number(i.toFixed(12));
+                var n = parseFloat(i.toFixed(12));
                 loop.push([n, n]); }}
         else{
             if(data_key){
