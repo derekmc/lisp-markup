@@ -1,6 +1,6 @@
 {
   "name": "lisp-markup",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A lisp based template language for markup with a focus on macros.",
   "main": "lisp_markup.js",
   "scripts": {
