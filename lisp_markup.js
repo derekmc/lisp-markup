@@ -476,34 +476,130 @@ function defineMacros(){
     // (FOR (count $ref) body) 
     // (FOR (start_n end_n $ref) body)
     function _for( l,data,markupConverter){
-        /*
         if(l.length < 4){
             logThrow("LispMarkup.macros.FOR: at least 3 arguments required."); }
         var variable_argument = l[1];
         var range_or_data_argument = l[2];
-        var substitutions;
-        var int_regex = /^(0|[-]?[1-9][0-9]*)$/; // TODO generalize to non-integer numbers.
+        var int_regex = /^(0|[-]?[1-9][0-9]*)$/; // TODO generalize to numbers.
+        var number_regex = /^(0|[-]?[1-9][0-9]*)(\.[0-9]+){0,1}$/;
+        var variable_regex = /^\$[_a-zA-Z0-9]+$/;
 
         var ref_variable = null;
         var value_variable = null;
         if(Array.isArray(variable_argument){
-            if(variable_argument.length == 0){
-            }
+            if(variable_argument.length == 0){}
             else if(variable_argument.length < 3){
                 var ref_variable_obj = variable_argument.length == 2? variable_argument[0] : null;
                 var value_variable_obj = variable_argument[variable_argument.length - 1];
-                if(ref_variable_obj && typeof ref_variable_obj != "string"){
-                    var msg = 
+                if(ref_variable_obj != null && ref_variable_obj != undefined){
+                    if(typeof ref_variable_obj != "string"){
+                        logThrow("LispMarkup.macros.FOR: reference variable declaration not a string.", ref_variable_obj); }
+                    if(ref_variable_obj[0] != "$"){
+                        logThrow("LispMarkup.macros.FOR: reference variable should begin with '$'", ref_variable_obj); }}
+                if(value_variable_obj == null || value_variable_obj == undefined){
+                    logThrow("LispMarkup.macros.FOR: value variable unexpectedly null or undefined."); }
+                if(typeof value_variable_obj != "string"){
+                    logThrow("LispMarkup.macros.FOR: value variable declaration not a string.", ref_variable_obj); }
+                if(value_variable_obj[0] != "$"){
+                    logThrow("LispMarkup.macros.FOR: reference variable should begin with '$'", ref_variable_obj); }
+                if(!variable_argument.match(variable_regex)){
+                    logThrow("LispMarkup.macros.FOR: variable name not valid", variable_argument); }
+                ref_variable = ref_variable_obj.substring(1);
+                value_variable = value_variable_obj.substring(1);
             }
             else{
                 logThrow("LispMarkup.macros.FOR: variable_argument list may not have more than 2 entries", variable_argument, l);
             }
         }
         else if(typeof variable_argument == "string"){
-            
+            if(variable_argument.length == 0){
+                logThrow("LispMarkup.macros.FOR: variable_argument unexpectedly an empty string."); }
+            if(variable_argument[0] != "$"){
+                logThrow("LispMarkup.macros.FOR: variable_argument was a string, must be a '$' prefixed variable name"); }
+            if(!variable_argument.match(variable_regex)){
+                logThrow("LispMarkup.macros.FOR: variable name not valid", variable_argument); }
+            value_variable = variable_argument.substring(1);
         }
-        */
+        else{
+            logThrow("LispMarkup.macros.FOR: variable_argument must be a list or a string.", variable_argument);
+        }
 
+        var is_range = false;
+        var start = 1;
+        var end = 1;
+        var increment = 1;
+        var data_key = null;
+        if(Array.isArray(range_or_data_argument)){
+            console.error("Array based ranges or data arguments not yet implemented.");
+        }
+        else if(typeof range_or_data_argument == "string"){
+            if(range_or_data_argument.match(int_regex)){
+                is_range = true;
+                start = 1;
+                // TODO check for overflow
+                end = parseInt(range_or_data_argument); }
+            else if(range_or_data_argument.match(number_regex)){
+                logThrow("LispMarkup.macros.FOR: single value range argument may not be non-integer number.", range_or_data_argument); }
+            else{
+                data_key = range_or_data_argument; }
+        }
+        else if(typeof range_or_data_argument == "number"){
+            var epsilon = 0.000001;
+            var error = range_or_data_argument - Math.round(range_or_data_argument);
+            if(error > epsilon || -error < -epsilon){
+                logThrow("LispMarkup.macros.FOR: single value range argument may not be non-integer number.", range_or_data_argument); }
+            is_range = true;
+            start = 1;
+            end = Math.round(range_or_data_argument);
+        }
+
+        var rest = l.slice(3);
+        var result_parts = [];
+        var var_substitutions = {};
+        var loop = [];
+        if(ref_variable !== null){
+            var_substitutions[ref_variable] = ""; }
+        if(val_variable !== null){
+            var_substitutions[val_variable] = ""; }
+        //else if(val_name !== null){
+            //logThrow("LispMarkup.macros.FOR: loop value variable unexpectedly assigned when loop reference variable was not."); }
+
+        if(is_range){
+            if(increment == 0){
+                logThrow("LispMarkup.macros.FOR: 0 increment not allowed", l); }
+            if(start > end && increment > 0){
+                increment = -increment; }
+            //console.log("bounds: " + start + ", " +  end + ", " + incr);
+            for(var i=start; increment>0? i<=end : i>=end; i += increment){
+                loop.push([i, i]); }}
+        else if(Array.isArray(loop_data)){
+            for(var i=0; i<loop_data.length; ++i){
+                loop.push([i+1, loop_data[i]]); }}
+        else if(typeof loop_data == "object"){
+            for(var k in loop_data){
+                loop.push([k, loop_data[k]]); }}
+
+        for(var i=0; i<loop.length; ++i){
+            var ref = loop[i][0];
+            var val = loop[i][1];
+            //console.log(ref_name, ref);
+            var current_data = data;
+            if(ref_variable !== null){
+                var_substitutions[ref_variable] = ref; }
+            if(val !== null){
+                if(val_variable !== null){
+                    var_substitutions[val_variable] = val; }
+                else{
+                    current_data = val; }}
+            //console.log(var_substitutions);
+            var processed_rest = (ref_variable !== null || val_variable !== null)? substitute(rest, var_substitutions) : rest;
+            for(var j=0; j<processed_rest.length; ++j){
+                result_parts.push(markupConverter(processed_rest[j], current_data)); }}
+        return result_parts.join('');
+    }
+
+
+        /*
         //if(Array.isArray(
         var one = l[1];
         var params;
@@ -638,6 +734,7 @@ function defineMacros(){
                 result_parts.push(markupConverter(processed_rest[j], current_data)); }}
         return result_parts.join('');
     }
+    */
     // if first param is array, it is list of assignments, otherwise, just do one assignnment.
     // variables must begin with '$'
     // variables can be referenced as '$a' or '${a}'
