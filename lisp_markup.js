@@ -112,7 +112,7 @@ function defineExports(){
                 var args = [];
                 for(var i=1; i<l.length; ++i){
                     args.push(markupConverter(l[i], data)); }
-                console.log("function", function_name, args);
+                //console.log("function", function_name, args);
                 return f.apply(null, args);
             }
         }
@@ -384,6 +384,9 @@ function defineMacros(){
     macros["##"] = comment;
     macros[":"] = properties;
     macros["="] = _let;
+    var int_regex = /^(0|[-]?[1-9][0-9]*)$/; // TODO generalize to numbers.
+    var number_regex = /^(0|[-]?[1-9][0-9]*)(\.[0-9]+){0,1}$/;
+    var variable_regex = /^\$[_a-zA-Z0-9]+$/;
     return macros;
     function properties( l,data,markupConverter){
         var props = {}
@@ -448,12 +451,12 @@ function defineMacros(){
     // if there is only 1 $ prefixed parameter, the value is used as the data context.
     //
     // FOR: loop over data or range.
-    // (FOR [variable(s)] [range or data] body...)
-    // variable(s):
+    // (FOR variable_argument range_or_data_argument body...)
+    // variable_argument:
     //   no variables: ()
     //   single variable: $x or ($s)
     //   two variables: ($key $value) or ($index $value) 
-    // range or data:
+    // range_or_data_argument:
     //   range:
     //     limit // limit: number. Loop from 1 to limit inclusive
     //     (limit) // limit: number. Loop from 1 to limit inclusive
@@ -466,23 +469,22 @@ function defineMacros(){
     //     (list) //list: list. Evaluate 'list' and then use that as the range or data argument.
     //     
     //   
-    // (FOR (property) body)  // loop data context
-    // (FOR (property $ref) body)  // loop data context, ref is index or key.
-    // (FOR (property $ref $value) body)  // parent data context 
-    // (FOR ($ref) body)  // loop data context
-    // (FOR ($ref $value) body) // parent data context
-    // (FOR (count) body) // parent data context
-    // (FOR (start_n end_n) body) 
-    // (FOR (count $ref) body) 
-    // (FOR (start_n end_n $ref) body)
+    function isInteger(x){
+        if(typeof x == "string"){
+            return x.match(int_regex); }
+        if(typeof x != "number"){
+            return false; }
+        var epsilon = 0.000001;
+        var error = x - Math.round(x);
+        if(error > epsilon || -error < -epsilon){
+            return false; }
+        return true;
+    }
     function _for( l,data,markupConverter){
         if(l.length < 4){
             logThrow("LispMarkup.macros.FOR: at least 3 arguments required."); }
         var variable_argument = l[1];
         var range_or_data_argument = l[2];
-        var int_regex = /^(0|[-]?[1-9][0-9]*)$/; // TODO generalize to numbers.
-        var number_regex = /^(0|[-]?[1-9][0-9]*)(\.[0-9]+){0,1}$/;
-        var variable_regex = /^\$[_a-zA-Z0-9]+$/;
 
         var ref_variable = null;
         var value_variable = null;
@@ -531,11 +533,46 @@ function defineMacros(){
         var end = 1;
         var increment = 1;
         var data_key = null;
-        if(Array.isArray(range_or_data_argument)){
-            logThrow("Array based ranges or data arguments not yet implemented.");
+        if(Array.isArray(range_or_data_argument)){  // number range
+            var range_or_data_list = range_or_data_argument;
+            if(range_or_data_list.length == 0){}
+            else if(range_or_data_list.length == 1){
+                var arg = range_or_data_list[0];
+                if(!isInteger(arg)){
+                    logThrow("LispMarkup.macros.FOR: single range argument must be an integer.", arg, range_or_data_argument);
+                }
+                is_range = true;
+                var n = parseInt(arg)
+                start = n > 0? 1 : -1;
+                end = n;
+            }
+            else if(range_or_data_list.length == 2){
+                var arg0 = range_or_data_list[0];
+                var arg1 = range_or_data_list[1];
+                if(isNaN(arg0) || isNaN(arg1)){
+                    logThrow("LispMarkup.macros.FOR: range start or end not a number."); }
+                is_range = true;
+                start = Number.parseFloat(arg0);
+                end = Number.parseFloat(arg1);
+            }
+            else if(range_or_data_list.length == 3){
+                var arg0 = range_or_data_list[0];
+                var arg1 = range_or_data_list[1];
+                var arg2 = range_or_data_list[2];
+                if(isNaN(arg0) || isNaN(arg1) || isNaN(arg2)){
+                    logThrow("LispMarkup.macros.FOR: range start or end not a number."); }
+                is_range = true;
+                start = Number.parseFloat(arg0);
+                end = Number.parseFloat(arg1);
+                increment = Number.parseFloat(arg2);
+            }
+            else{
+                logThrow("LispMarkup.macros.FOR: range argument may only have 3 entries.");
+            }
+            //logThrow("Array based ranges or data arguments not yet implemented.");
         }
         else if(typeof range_or_data_argument == "string"){
-            if(range_or_data_argument.match(int_regex)){
+            if(int_regex.test(range_or_data_argument)){ //(int_regex)){
                 is_range = true;
                 start = 1;
                 // TODO check for overflow
@@ -546,9 +583,7 @@ function defineMacros(){
                 data_key = range_or_data_argument; }
         }
         else if(typeof range_or_data_argument == "number"){
-            var epsilon = 0.000001;
-            var error = range_or_data_argument - Math.round(range_or_data_argument);
-            if(error > epsilon || -error < -epsilon){
+            if(!isInteger(range_or_data_argument)){
                 logThrow("LispMarkup.macros.FOR: single value range argument may not be non-integer number.", range_or_data_argument); }
             is_range = true;
             start = 1;
@@ -572,11 +607,16 @@ function defineMacros(){
                 logThrow("LispMarkup.macros.FOR: 0 increment not allowed", l); }
             if(start > end && increment > 0){
                 increment = -increment; }
-            //console.log("bounds: " + start + ", " +  end + ", " + incr);
-            for(var i=start; increment>0? i<=end : i>=end; i += increment){
-                loop.push([i, i]); }}
+            if(start < end && increment < 0){
+                increment = -increment; }
+            for(var i=start; (increment>0)? i<=end : i>=end; i += increment){
+                var n = Number(i.toFixed(12));
+                loop.push([n, n]); }}
         else{
-            var loop_data = D({}, data? data[data_key] : null);
+            if(data_key){
+                loop_data = D({}, data? data[data_key] : null); }
+            else{
+                loop_data = D({}, data); }
             if(Array.isArray(loop_data)){
                 for(var i=0; i<loop_data.length; ++i){
                     loop.push([i+1, loop_data[i]]); }}
@@ -584,6 +624,7 @@ function defineMacros(){
                 for(var k in loop_data){
                     loop.push([k, loop_data[k]]); }}}
 
+        //console.log("start, end, increment", start, end, increment);
         for(var i=0; i<loop.length; ++i){
             var ref = loop[i][0];
             var val = loop[i][1];
@@ -596,7 +637,6 @@ function defineMacros(){
                     var_substitutions[value_variable] = val; }
                 else{
                     current_data = val; }}
-            //console.log(var_substitutions);
             var processed_rest = (ref_variable !== null || value_variable !== null)? substitute(rest, var_substitutions) : rest;
             for(var j=0; j<processed_rest.length; ++j){
                 result_parts.push(markupConverter(processed_rest[j], current_data)); }}

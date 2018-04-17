@@ -32,26 +32,31 @@
           (tr (th square\((@) &nbsp;\))
               (td (square (@))))))
 
+      (## ul (FOR $x (1 10) (li $x)))
       (#asdf-container)
 
-      (COMMENT DEF asdf (h2 ASDF)
-        (ul (FOR $x (1 10) (li $x))))
+      (#mult_table-container)
 
-      (COMMENT DEF mult_table
+      (DEF asdf (h2 ASDF)
+        (ul (FOR $x (1 10 0.7) (li $x))))
+
+      (DEF mult_table
         (h1 Multiplication Table)
         (table
           (= ($low (@ low 1)
               $high (@ high 10))
             (tr (th x) (FOR $x ($low $high) (th $x)))
-            (FOR $y (($ low 1) (@ high 10) $y) 
-              (tr (th $y) (FOR $x (((@ low) (@ high))) (td (* $x $y))))))))
+            (FOR $y ($low $high)
+              (tr (th $y) (FOR $x ($low $high) (td (* $x $y))))))))
 
-      (## #mult_table-container)
-
-      (CSS (th (color white) (background blue))
-           (td (font-size 180%) (text-align center))
-           (th,td (padding 8px 20px)
-                  (border-bottom 1px solid black))
+      (CSS (th (color white)
+               (background blue)
+               (border-bottom 1px solid black)
+               (border-right 1px solid black)
+               (font-family sans-serif))
+           (td (font-size 180%) (text-align center)
+               (border-bottom 1px solid black))
+           (th,td (padding 8px 20px))
            (table (border-spacing 0)
                   (border 2px solid black)))
     </script>
