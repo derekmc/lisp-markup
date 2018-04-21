@@ -1,13 +1,12 @@
 lisp-markup: todo.txt
 ==== Outstanding Liabilities ====
- - loop $ref (index or key) and $obj variables only on end, may not be best choice.
 ==== New Assets ====
- - write a macro for embedded templates. (TEMPLATE, @)
-   can we make it only process when first compiled, and load the other templates directly?
- - Update IF to accept 3 arguments as well, not just 4. 
  - rename 'markupConverter' inversion of control parameter function to 'toMarkup'.
  - better demos, tests, doc, etc.
 ==== Implemented Assets ====
+ - Update IF to accept 3 arguments as well, not just 4. 
+ - write a macro for embedded templates. (TEMPLATE, @)
+   can we make it only process when first compiled, and load the other templates directly?
  - IF macro, conditionals.
 ==== Cleared Liabilities ====
 ==== Wish List ====

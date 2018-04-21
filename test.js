@@ -69,7 +69,8 @@ function test(){
                    ['th', 'First Name']],
             ['FOR', [], 'namelist',
               ['tr', ['td.lastname', ['GET', 1]],
-                     ['td.firstname', ['GET', 0]]]]]]
+                     ['td.firstname', ['GET', 0]]]]]],
+        ["IF", function(){ return Math.random()<0.15; }, ["button", "DON'T", {onclick:"alert('Arrggh');"}]],
     ]
  
     var lisp_template = '(#main (LET ($title (@ title)) (h1.maintitle $title)' +

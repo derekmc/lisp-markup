@@ -404,8 +404,8 @@ function defineMacros(){
     }
     function _if(l,data,markupConverter){
         var result_parts = [];
-        if(l.length < 4){
-            logThrow("LispMarkup.macros._if not enough list arguments"); }
+        if(l.length < 3 || l.length > 4){
+            logThrow("LispMarkup.macros._if invalid number of arguments", l.length, l); }
         var test = l[1];
         var test_result = false;
         if(typeof test == "function"){
@@ -420,8 +420,9 @@ function defineMacros(){
             logThrow("LispMarkup.macros._if invalid type for context argument"); }
         if(test_result){
             return markupConverter(l[2], data, markupConverter); }
-        else{
+        else if(l.length > 3){
             return markupConverter(l[3], data, markupConverter); }
+        else return "";
     }
     function _with( l,data,markupConverter){
         var result_parts = [];
