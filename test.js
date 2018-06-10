@@ -94,15 +94,17 @@ function test(){
        ]
     }
 
-    if(true){ //Math.random() < 0.5)
-    //if(false){
+    //if(true){ //Math.random() < 0.5)
+    if(false){
         var html = LispMarkup.toHtml(json_template, physics_names_data);
         //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
     }
     else{
         //var html = LispMarkup.toHtml( json_template,physics_names_data);
-        var tree = LispMarkup.lispTree(lisp_template);
-        console.log(JSON.stringify(tree));
+        //var tree = LispMarkup.lispTree(lisp_template);
+        var tree = LispMarkup.lispTree('({})');
+        console.log(tree);
+        //console.log(JSON.stringify(tree));
         var template = LispMarkup.compileTemplate(lisp_template);
         var html = template(physics_names_data);
         /*

@@ -18,6 +18,7 @@
  *
  * All markup conversion functions follow the following calling pattern.
  *
+ *
  * markupConverter( l,data):
  *   l: the template, whether a lisp string or a javascript list datastructure, to be converted to markup.
  *     entries in l are handled accoring to the type of the entry:
@@ -208,6 +209,31 @@ function defineExports(){
         var root = [];
         var node = root;
         var next;
+        var parenStack = [];
+        var matchingParens = {
+            '(': ')', '{': '}' };
+        var parenNode = {
+            '(': function(){ return []; },
+            '{': function(){ return {}; },
+        }
+        var openParens = ['(', '{'];
+        var closeParens = [')', '}'];
+
+        
+        var lastKey = null;
+        var handleToken = function(node, token){
+            if(Array.isArray(node)){
+                node.push(token);
+                lastKey = null;
+            } else if(typeof node == "object"){
+                if(lastKey === null){
+                    lastKey = token;
+                } else {
+                    node[lastKey] = token;
+                    lastKey = null;
+                }
+            }
+        }
         for(var i=0,j=0; i<s.length; ++i){
             var c = s[i];
             if(c == "\\"){
@@ -222,7 +248,7 @@ function defineExports(){
                         logThrow("lispTree: unterminated string","token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
                 if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
-                    node.push(s.substring(j+1,i));
+                    handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
             if(c == "\""){
                 var standalone = (i==j);
@@ -231,22 +257,33 @@ function defineExports(){
                         logThrow("lispTree: unterminated string", "token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
                 if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
-                    node.push(s.substring(j+1,i));
+                    handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
-            if(c == "("){ //log("("+i+","+j);
-                if(i > j) node.push(s.substring(j,i));
-                node.push(next = []);
-                next.parent = node;
-                node = next;
-                j = i+1; }
-            if(c == ")"){ //log(")"+i+","+j);
-                if(i > j) node.push(s.substring(j,i));
-                if(node == root){
-                    logThrow("lispTree: xtra ')'", "token, node, root, s:", s.substring(j,i), node, root, s); }
-                node = node.parent;
-                j = i+1; }
-            if(c.match(/\s/)){ //log("_"+i+","+j);
-                if(i > j) node.push(s.substring(j,i));
+            for(var k=0; k<openParens.length; ++k){
+                var p = openParens[k];
+                if(c == p){
+                    if(i > j) handleToken(node, s.substring(j,i));
+                    node.push(next = parenNode[p]());
+                    next.parent = node;
+                    node = next;
+                    j = i+1;
+                    parenStack.push(p); }
+            }
+            for(var k=0; k<closeParens.length; ++k){
+                var p = closeParens[k];
+                if(c == p){
+                    var open = parenStack.pop();
+                    if(p != matchingParens[open]){
+                        logThrow("lispTree: mismatched parentheses " + open + ", " + p); }
+                    if(i > j) handleToken(node, s.substring(j,i));
+                    if(node == root){
+                        logThrow("lispTree: xtra ')'", "token, node, root, s:", s.substring(j,i), node, root, s); }
+                    node = node.parent;
+                    j = i+1;
+                }
+            }
+            if(c.match(/\s/)){
+                if(i > j) handleToken(node, s.substring(j,i));
                 while(i<s.length && s[i].match(/\s/)) ++i;
                 j = i;
                 --i;
@@ -256,6 +293,7 @@ function defineExports(){
             logThrow("lispTree: xtra '('", "token, node, root, s:", s.substring(j,i), node, root, s); }
         if(i > j) root.push(s.substring(j,i));
         return root;
+
     }
     
     function customTagMarkupConverter(taghandler){
