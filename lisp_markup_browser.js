@@ -17,8 +17,7 @@ var LispMarkupBrowser = {};
     LispMarkupBrowser.updateAll = updateAll;
     LispMarkupBrowser.updateContainers = updateContainers;
     LispMarkupBrowser.getContainers = getContainers;
-    LispMarkup.addMacro("DEFINE", macroDefineTemplate);
-    LispMarkup.addMacro("DEF", macroDefineTemplate);
+    LispMarkup.addMacro("SECTION", macroDefineTemplate);
 
     // -------- Last Procedural Statement in Module -----------
     window.addEventListener("load", browserInit);
