@@ -5,7 +5,7 @@ var LispMarkupBrowser = {};
 
     var templates = {};
 
-    var CONTAINER_SUFFIX = "-container";
+    var CONTAINER_SUFFIX = "";
     var DATA_SUFFIX = "_data";
     var CONTENT_SUFFIX = /-content$|-template$/
 
