@@ -153,8 +153,8 @@ function defineExports(){
     // uses a shorthand language for element tagname, id, and (css) classes:
     //   tagname#id.class1.class2
     function htmlTagHandler(tagstr, props){
-        T(tagstr, "");
-        T(props, {}, undefined);
+        T("", tagstr);
+        T(undefined, {}, props);
         if(!props) props = {}
         var open_parts = ["<"],
             i = 0,
@@ -210,6 +210,7 @@ function defineExports(){
         var node = root;
         var next;
         var parenStack = [];
+        var nodeStack = [root];
         var matchingParens = {
             '(': ')', '{': '}' };
         var parenNode = {
@@ -264,7 +265,7 @@ function defineExports(){
                 if(c == p){
                     if(i > j) handleToken(node, s.substring(j,i));
                     node.push(next = parenNode[p]());
-                    next.parent = node;
+                    nodeStack.push(node);
                     node = next;
                     j = i+1;
                     parenStack.push(p); }
@@ -278,7 +279,8 @@ function defineExports(){
                     if(i > j) handleToken(node, s.substring(j,i));
                     if(node == root){
                         logThrow("lispTree: xtra ')'", "token, node, root, s:", s.substring(j,i), node, root, s); }
-                    node = node.parent;
+                    node = nodeStack.pop();
+                    //node = node.parent;
                     j = i+1;
                 }
             }
@@ -293,7 +295,6 @@ function defineExports(){
             logThrow("lispTree: xtra '('", "token, node, root, s:", s.substring(j,i), node, root, s); }
         if(i > j) root.push(s.substring(j,i));
         return root;
-
     }
     
     function customTagMarkupConverter(taghandler){
@@ -304,8 +305,8 @@ function defineExports(){
         // Some test cases would be nice.
         return markupConverter;  
         function markupConverter(l, data){
-            T([], "", 0, l);
-            data = T({}, [], D({}, data));
+            //T([], "", 0, l);
+            data = D({}, data); //T({}, [], D({}, data));
             var props = {};
             var first = l[0];
             var tagname = null;
