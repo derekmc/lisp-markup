@@ -94,15 +94,8 @@ function test(){
        ]
     }
     //var template = `()`
-    var template = `(form (input asdf {type text}) (input {type submit value submit}))`;
-    var tree = LispMarkup.lispTree(template, {});
-    var html = LispMarkup.toHtml(template, {});
-    console.log(tree);
-    console.log(html);
-    return html;
 
-    //if(true){ //Math.random() < 0.5)
-    if(false){
+    if(true){ //Math.random() < 0.5)
         var html = LispMarkup.toHtml(json_template, physics_names_data);
         //var html = LispMarkup.toHtml(lisp_template, physics_names_data);
     }
