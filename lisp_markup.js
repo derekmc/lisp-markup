@@ -62,6 +62,9 @@ function defaultValue(default_value, value){
         return default_value; }
     return value;
 }
+function htmlDoubleQuoteEscape(s){
+    return s.replace(/"/g, '&quot');
+}
 
 // logs several arguments, throws with just the message
 // logThrow(msg, debug_args...)
@@ -194,7 +197,7 @@ function defineExports(){
             if(propvalue === null || propvalue === undefined){
                 open_parts.push(" ", propname); }
             else{
-                open_parts.push(" ", propname, "=\"", propvalue, "\""); }}
+                open_parts.push(" ", propname, "=\"", htmlDoubleQuoteEscape(propvalue), "\""); }}
         if(class_list.length){
             open_parts.push(" class=\"");
             for(var i=0; i<class_list.length; ++i){
