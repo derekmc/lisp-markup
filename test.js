@@ -74,7 +74,7 @@ function test(){
     ]
  
     var lisp_template = '(#main (LET ($title (@ title)) (h1.maintitle $title)' +
-                        '         (input {type button value "Test Me"})' + 
+                        '         (input (: type button value "Test Me"))' + 
                         '         (table.namelist' +
                         '           (tr (th Index) (th Last Name) (th First Name))' +
                         //'           (tr (th NameList) (td (STRINGIFY namelist)))' +
@@ -104,6 +104,8 @@ function test(){
     else{
         //var html = LispMarkup.toHtml( json_template,physics_names_data);
         //var tree = LispMarkup.lispTree(lisp_template);
+        var tree = LispMarkup.lispTree('((: type button value "daft punk"))');
+        console.log(tree);
         var tree = LispMarkup.lispTree('({type button value "daft punk"})');
         console.log(tree);
         //console.log(JSON.stringify(tree));

@@ -63,6 +63,8 @@ function defaultValue(default_value, value){
     return value;
 }
 function htmlDoubleQuoteEscape(s){
+    // remove outer quotes.
+    // if(s[0] = '"' && s[s.length-1] == '"') s = s.substring(1, s.length-1);
     return s.replace(/\"/g, '&quot;');
 }
 
@@ -251,7 +253,7 @@ function defineExports(){
                     if(i == s.length){
                         logThrow("lispTree: unterminated string","token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
-                if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s(){}]/))){
                     handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
             if(c == "\""){
@@ -260,7 +262,7 @@ function defineExports(){
                     if(i == s.length){
                         logThrow("lispTree: unterminated string", "token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
-                if(standalone && (i == s.length-1 || s[i+1].match(/[\s()]/))){
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s(){}]/))){
                     handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
             for(var k=0; k<openParens.length; ++k){
