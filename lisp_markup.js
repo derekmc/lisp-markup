@@ -63,7 +63,7 @@ function defaultValue(default_value, value){
     return value;
 }
 function htmlDoubleQuoteEscape(s){
-    return s.replace(/"/g, '&quot');
+    return s.replace(/\"/g, '&quot;');
 }
 
 // logs several arguments, throws with just the message
