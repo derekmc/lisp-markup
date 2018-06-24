@@ -216,10 +216,13 @@ function defineExports(){
         var next;
         var parenStack = [];
         var nodeStack = [root];
+        // '(' and '[' both denote lists
+        // but must match ')' and ']' respectively.
         var matchingParens = {
-            '(': ')', '{': '}' };
+            '(': ')', '[': ']', '{': '}' };
         var parenNode = {
             '(': function(){ return []; },
+            '[': function(){ return []; },
             '{': function(){ return {}; },
         }
         var openParens = ['(', '{'];
