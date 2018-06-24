@@ -76,7 +76,7 @@ function test(){
     var lisp_template = '(#main (LET ($title (@ title)) (h1.maintitle ${title})' +
                         '         (input {type button value "Test Me"})' + 
                         '         [table.namelist' +
-                        '           (tr (th Index) (th Last Name) (th First Name))' +
+                        '           (tr [th Index] [th Last Name] (th First Name))' +
                         '             (FOR () namelist (tr (td) (td.lastname (@ 1)) (td.firstname (@ 0))))]' +
                         '         (hr) (i $title)))';
     var physics_names_data = {

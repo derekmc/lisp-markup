@@ -225,8 +225,8 @@ function defineExports(){
             '[': function(){ return []; },
             '{': function(){ return {}; },
         }
-        var openParens = ['(', '{'];
-        var closeParens = [')', '}'];
+        var openParens = ['(', '[', '{'];
+        var closeParens = [')', ']', '}'];
 
         
         var lastKey = null;
