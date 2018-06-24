@@ -217,13 +217,13 @@ function defineExports(){
         var parenStack = [];
         var nodeStack = [root];
         var matchingParens = {
-            '(': ')', '{': '}' };
+            '[': ']', '{': '}' };
         var parenNode = {
-            '(': function(){ return []; },
+            '[': function(){ return []; },
             '{': function(){ return {}; },
         }
-        var openParens = ['(', '{'];
-        var closeParens = [')', '}'];
+        var openParens = ['[', '{'];
+        var closeParens = [']', '}'];
 
         
         var lastKey = null;
@@ -253,7 +253,7 @@ function defineExports(){
                     if(i == s.length){
                         logThrow("lispTree: unterminated string","token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
-                if(standalone && (i == s.length-1 || s[i+1].match(/[\s(){}]/))){
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s\[\]\{\}]/))){
                     handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
             if(c == "\""){
@@ -262,7 +262,7 @@ function defineExports(){
                     if(i == s.length){
                         logThrow("lispTree: unterminated string", "token, node, root, s:", s.substring(j,i), node, root, s); }
                     if(s[i] == "\\") ++i; }
-                if(standalone && (i == s.length-1 || s[i+1].match(/[\s(){}]/))){
+                if(standalone && (i == s.length-1 || s[i+1].match(/[\s\[\]\{\}]/))){
                     handleToken(node, s.substring(j+1,i));
                     j = i+1; }}
             for(var k=0; k<openParens.length; ++k){
@@ -283,7 +283,7 @@ function defineExports(){
                         logThrow("lispTree: mismatched parentheses " + open + ", " + p); }
                     if(i > j) handleToken(node, s.substring(j,i));
                     if(node == root){
-                        logThrow("lispTree: xtra ')'", "token, node, root, s:", s.substring(j,i), node, root, s); }
+                        logThrow("lispTree: xtra paren " + open, "token, node, root, s:", s.substring(j,i), node, root, s); }
                     node = nodeStack.pop();
                     //node = node.parent;
                     j = i+1;
@@ -896,9 +896,9 @@ function defineMacros(){
                     var j = i+1;
                     var name = '';
                     ++i;
-                    if(i<x.length && x[i] == '{'){
+                    if(i<x.length && x[i] == '('){
                         do ++i; 
-                        while(i<x.length && x[i] != '}');
+                        while(i<x.length && x[i] != ')');
                         name = x.substring(j+1,i);
                         ++i;
                         console.log(name); }
