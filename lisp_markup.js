@@ -384,15 +384,18 @@ function defineExports(){
                         else if(property_value === null || property_value === undefined){
                             props[k] = null; }
                         else if(typeof property_value == "function"){
-                            // view function
-                            var view = property_value;
-                            var view_result = view(data);
-                            if(typeof view_result == "string"){
-                                props[k] = view_result + " "; }
-                            else if(!view_result){
-                                props[k] = ""; }
+                            if(k.indexOf('on')){  // event handler
+                                props[k] = property_value; }
                             else{
-                                logThrow("LispMarkup markup conversion function: template returned value with invalid type."); }}
+                                // template view function
+                                var view = property_value;
+                                var view_result = view(data);
+                                if(typeof view_result == "string"){
+                                    props[k] = view_result + " "; }
+                                else if(!view_result){
+                                    props[k] = ""; }
+                                else{
+                                    logThrow("LispMarkup markup conversion function: template returned value with invalid type."); }}}
                         else{
                             logThrow("LispMarkup: illegal property value type."); }}}
                 else if(typeof x == "function"){
