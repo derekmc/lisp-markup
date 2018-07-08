@@ -57,6 +57,7 @@ else{
 
 
 var D = defaultValue;
+function T(){ return arguments[arguments.length-1]; }
 function defaultValue(default_value, value){
     if(value === null || value === undefined){
         return default_value; }
@@ -91,7 +92,6 @@ function mergeObjects(result){
 function defineExports(){
     var exports = {};
     // TODO use real typecheck module
-    function T(){ return arguments[arguments.length-1]; }
 
     var lispToHtml = customTagMarkupConverter(htmlTagHandler); 
     /* htmlTagHandler: process html tags
