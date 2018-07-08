@@ -76,6 +76,17 @@ function logThrow(msg){
 }
 
 
+function mergeObjects(result){
+    result = T({}, D({}, result));
+    for(var i=1; i<arguments.length; ++i){
+        var obj = T({}, arguments[i]);
+        for(var k in obj){
+            if(!result.hasOwnProperty(k)){
+                result[k] = obj[k]; }}
+    }
+    return result;
+}
+
 
 function defineExports(){
     var exports = {};
@@ -338,7 +349,14 @@ function defineExports(){
             if(typeof first == "function"){
                 // first is a macro
                 var macro = first;
-                var macro_result = macro( list,data,markupConverter);
+                var macro_props = {};
+                for(var i=1; i<list.length; ++i){
+                    var x = list[i];
+                    if(typeof x == "object" && !Array.isArray(x)){
+                        mergeObjects(macro_props, x); }
+                }
+
+                var macro_result = macro( list,macro_props,data,markupConverter);
                 if(typeof macro_result == "string"){
                     return macro_result; }
                 else if(Array.isArray(macro_result)){
@@ -445,21 +463,21 @@ function defineMacros(){
     var number_regex = /^(0|[-]?[1-9][0-9]*)(\.[0-9]+){0,1}$/;
     var variable_regex = /^\$[_a-zA-Z0-9]+$/;
     return macros;
-    function properties( list,data,markupConverter){
-        var props = {}
+    function properties( list,props,data,markupConverter){
+        props = D({}, props);
         for(var i=1; i<list.length-1; i+=2){
             props[list[i]] = list[i+1]; }
         return props;
     }
     
-    function _stringify( list,data,markupConverter){
+    function _stringify( list,props,data,markupConverter){
         if(list.length == 1){
             return JSON.stringify(data); }
         if(list.length == 2){
             return JSON.stringify(data[list[1]]); }
         logThrow("LispMarkup.macros.STRINGIFY: only 0 or 1 arguments allowed.");
     }
-    function _if(list,data,markupConverter){
+    function _if(list,props,data,markupConverter){
         var result_parts = [];
         if(list.length < 3 || list.length > 4){
             logThrow("LispMarkup.macros._if invalid number of arguments", list.length, list); }
@@ -481,7 +499,7 @@ function defineMacros(){
             return markupConverter(list[3], data, markupConverter); }
         else return "";
     }
-    function _with( list,data,markupConverter){
+    function _with( list,props,data,markupConverter){
         var result_parts = [];
         if(list.length < 3){
             logThrow("LispMarkup.macros._with not enough list arguments"); }
@@ -498,7 +516,7 @@ function defineMacros(){
             result_parts.push(markupConverter( list[i],data,markupConverter)); }
         return result_parts.join("");
     }
-    function comment( list,data,markupConverter){
+    function comment( list,props,data,markupConverter){
         return "";
     }
     // if list[1] is array, it is a a list of FOR parameters,
@@ -538,7 +556,7 @@ function defineMacros(){
             return false; }
         return true;
     }
-    function _for( list,data,markupConverter){
+    function _for( list,props,data,markupConverter){
         if(list.length < 4){
             logThrow("LispMarkup.macros.FOR: at least 3 arguments required."); }
         var variable_argument = list[1];
@@ -842,7 +860,7 @@ function defineMacros(){
     // variables must begin with '$'
     // variables can be referenced as '$a' or '${a}'
     // only assigned variables are substituted.  '$' not part of an assigned variable are ignored.
-    function _let( list,data,markupConverter){
+    function _let( list,props,data,markupConverter){
         var one = list[1];
         var assign_list;
         var substitutions = {};
@@ -929,14 +947,14 @@ function defineMacros(){
         }
         return x;
     }
-    function concat( list,data,markupConverter){
+    function concat( list,props,data,markupConverter){
         var result_parts = [''];
         for(var i=1; i<list.length; ++i){
             var s = markupConverter( list[i],data);
             result_parts.push(s.toString().trim()); }
         return result_parts.join('');
     }
-    function concat_space( list,data,markupConverter){
+    function concat_space( list,props,data,markupConverter){
         var result_parts = [''];
         for(var i=1; i<list.length; ++i){
             var s = markupConverter( list[i],data);
@@ -944,7 +962,7 @@ function defineMacros(){
         return result_parts.join('');
     }
 
-    function get( list,data,markupConverter){
+    function get( list,props,data,markupConverter){
         if(list.length == 1){
             return data.toString(); }
         else if(list.length == 2){
@@ -960,7 +978,7 @@ function defineMacros(){
             logThrow("LispMarkup.macros.get invalid number of list arguments"); 
         }
     }
-    function css( list,data,markupConverter){
+    function css( list,props,data,markupConverter){
         var result_parts = ['<style>'];
         for(var i=1; i<list.length; ++i){
             result_parts.push(handleEntry(list[i])); }
