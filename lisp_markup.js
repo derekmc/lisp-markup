@@ -19,21 +19,21 @@
  * All markup conversion functions follow the following calling pattern.
  *
  *
- * markupConverter( l,data):
- *   l: the template, whether a lisp string or a javascript list datastructure, to be converted to markup.
- *     entries in l are handled accoring to the type of the entry:
+ * markupConverter( list,data):
+ *   list: the template, whether a lisp string or a javascript list datastructure, to be converted to markup.
+ *     entries in list are handled accoring to the type of the entry:
  *       - lists within this list are evaluated recursively like in lisp.
  *       - objects are property sets which are added to current node in the markup.
  *       - a function in the first position of a list is a macro.
  *       - a function in a non-first position is a view function.
- *       - views in l are called with a data parameter which is the current context in the data.
+ *       - views in list are called with a data parameter which is the current context in the data.
  *          view( data);
  *          views must return a string.
  *       - macros in the template are called with the following parameters:
  *          macro( template,data,markupConverter);
- *            - l: the current list this macro is applied to,
+ *            - list: the current list this macro is applied to,
  *                 which will include the macro itself in the first position.
- *            - data: for templating, this is the same parameter that is passed to markupConverter( l,data), see more below.
+ *            - data: for templating, this is the same parameter that is passed to markupConverter( list,data), see more below.
  *            - markupConverter: macros are provided the current markupConverter function so they can do more magic.
  *
  *            The macro's return value is used in place of the original list with the macro.
@@ -44,7 +44,7 @@
  *   data:
  *     this parameter allows your list datastructure to be used as a template.
  *     the values in the final markup are filled in with the data values from this list.
- *     Both tranformation and macro functions within l are passed this parameter as described above.
+ *     Both tranformation and macro functions within list are passed this parameter as described above.
  */ 
 
 (function(){  // scope
@@ -114,10 +114,10 @@ function defineExports(){
     function addFunction(function_name, func){
         addMacro(function_name, makeMacro(func));
         function makeMacro(f){
-            return function( l,data,markupConverter){
+            return function( list,data,markupConverter){
                 var args = [];
-                for(var i=1; i<l.length; ++i){
-                    args.push(markupConverter(l[i], data)); }
+                for(var i=1; i<list.length; ++i){
+                    args.push(markupConverter(list[i], data)); }
                 //console.log("function", function_name, args);
                 return f.apply(null, args);
             }
@@ -319,17 +319,17 @@ function defineExports(){
         // TODO make sure the right 'markupConverter' closure, with access to the proper taghandler is used for all recursive calls.
         // Some test cases would be nice.
         return markupConverter;  
-        function markupConverter(l, data){
-            //T([], "", 0, l);
+        function markupConverter(list, data){
+            //T([], "", 0, list);
             data = D({}, data); //T({}, [], D({}, data));
             var props = {};
-            var first = l[0];
+            var first = list[0];
             var tagname = null;
             var result_parts = [''];  //save space for opening tag
-            if(l === null || l === undefined){
+            if(list === null || list === undefined){
                 return ""; }
-            if(typeof l == "string" || typeof l == "number"){
-                return l.toString() + " "; }
+            if(typeof list == "string" || typeof list == "number"){
+                return list.toString() + " "; }
             if(typeof first == "string"){
                 if(macros.hasOwnProperty(first)){
                     first = macros[first]; }
@@ -338,7 +338,7 @@ function defineExports(){
             if(typeof first == "function"){
                 // first is a macro
                 var macro = first;
-                var macro_result = macro( l,data,markupConverter);
+                var macro_result = macro( list,data,markupConverter);
                 if(typeof macro_result == "string"){
                     return macro_result; }
                 else if(Array.isArray(macro_result)){
@@ -354,9 +354,9 @@ function defineExports(){
                 // returned
             }
 
-            for(var i=0; i<l.length; ++i){
+            for(var i=0; i<list.length; ++i){
                 if(i==0 && tagname) continue; //skip tag
-                var x = l[i];
+                var x = list[i];
                 if(Array.isArray(x)){
                     var result = markupConverter(x, data);
                     if(typeof result == "object" && result.constructor == ({}).constructor){
@@ -445,25 +445,25 @@ function defineMacros(){
     var number_regex = /^(0|[-]?[1-9][0-9]*)(\.[0-9]+){0,1}$/;
     var variable_regex = /^\$[_a-zA-Z0-9]+$/;
     return macros;
-    function properties( l,data,markupConverter){
+    function properties( list,data,markupConverter){
         var props = {}
-        for(var i=1; i<l.length-1; i+=2){
-            props[l[i]] = l[i+1]; }
+        for(var i=1; i<list.length-1; i+=2){
+            props[list[i]] = list[i+1]; }
         return props;
     }
     
-    function _stringify( l,data,markupConverter){
-        if(l.length == 1){
+    function _stringify( list,data,markupConverter){
+        if(list.length == 1){
             return JSON.stringify(data); }
-        if(l.length == 2){
-            return JSON.stringify(data[l[1]]); }
+        if(list.length == 2){
+            return JSON.stringify(data[list[1]]); }
         logThrow("LispMarkup.macros.STRINGIFY: only 0 or 1 arguments allowed.");
     }
-    function _if(l,data,markupConverter){
+    function _if(list,data,markupConverter){
         var result_parts = [];
-        if(l.length < 3 || l.length > 4){
-            logThrow("LispMarkup.macros._if invalid number of arguments", l.length, l); }
-        var test = l[1];
+        if(list.length < 3 || list.length > 4){
+            logThrow("LispMarkup.macros._if invalid number of arguments", list.length, list); }
+        var test = list[1];
         var test_result = false;
         if(typeof test == "function"){
             test_result = test(data); }
@@ -476,16 +476,16 @@ function defineMacros(){
         else{
             logThrow("LispMarkup.macros._if invalid type for context argument"); }
         if(test_result){
-            return markupConverter(l[2], data, markupConverter); }
-        else if(l.length > 3){
-            return markupConverter(l[3], data, markupConverter); }
+            return markupConverter(list[2], data, markupConverter); }
+        else if(list.length > 3){
+            return markupConverter(list[3], data, markupConverter); }
         else return "";
     }
-    function _with( l,data,markupConverter){
+    function _with( list,data,markupConverter){
         var result_parts = [];
-        if(l.length < 3){
+        if(list.length < 3){
             logThrow("LispMarkup.macros._with not enough list arguments"); }
-        var context = l[1];
+        var context = list[1];
         if(data === null || data === "undefined"){
             logThrow("LispMarkup.macros._with data is not defined"); }
         if(typeof context == "function"){
@@ -494,15 +494,15 @@ function defineMacros(){
             data = data[context]; }
         else{
             logThrow("LispMarkup.macros._with invalid type for context argument"); }
-        for(var i=2; i<l.length; ++i){
-            result_parts.push(markupConverter( l[i],data,markupConverter)); }
+        for(var i=2; i<list.length; ++i){
+            result_parts.push(markupConverter( list[i],data,markupConverter)); }
         return result_parts.join("");
     }
-    function comment( l,data,markupConverter){
+    function comment( list,data,markupConverter){
         return "";
     }
-    // if l[1] is array, it is a a list of FOR parameters,
-    // otherwise, l[1] is the the only FOR parameter.
+    // if list[1] is array, it is a a list of FOR parameters,
+    // otherwise, list[1] is the the only FOR parameter.
     // if the first parameter is not '$' prefixed, it is a selector,
     // the first $ prefixed parameter is the index or key.
     // the second $ prefixed parameter is the value.
@@ -538,11 +538,11 @@ function defineMacros(){
             return false; }
         return true;
     }
-    function _for( l,data,markupConverter){
-        if(l.length < 4){
+    function _for( list,data,markupConverter){
+        if(list.length < 4){
             logThrow("LispMarkup.macros.FOR: at least 3 arguments required."); }
-        var variable_argument = l[1];
-        var range_or_data_argument = l[2];
+        var variable_argument = list[1];
+        var range_or_data_argument = list[2];
 
         var ref_variable = null;
         var value_variable = null;
@@ -570,7 +570,7 @@ function defineMacros(){
                 //console.log("value_variable", value_variable);
             }
             else{
-                logThrow("LispMarkup.macros.FOR: variable_argument list may not have more than 2 entries", variable_argument, l);
+                logThrow("LispMarkup.macros.FOR: variable_argument list may not have more than 2 entries", variable_argument, list);
             }
         }
         else if(typeof variable_argument == "string"){
@@ -648,7 +648,7 @@ function defineMacros(){
             end = Math.round(range_or_data_argument);
         }
 
-        var rest = l.slice(3);
+        var rest = list.slice(3);
         var result_parts = [];
         var var_substitutions = {};
         var loop = [];
@@ -662,7 +662,7 @@ function defineMacros(){
 
         if(is_range){
             if(increment == 0){
-                logThrow("LispMarkup.macros.FOR: 0 increment not allowed", l); }
+                logThrow("LispMarkup.macros.FOR: 0 increment not allowed", list); }
             if(start > end && increment > 0){
                 increment = -increment; }
             if(start < end && increment < 0){
@@ -704,12 +704,12 @@ function defineMacros(){
 
         /*
         //if(Array.isArray(
-        var one = l[1];
+        var one = list[1];
         var params;
         var substitutions;
         var int_regex = /^(0|[-]?[1-9][0-9]*)$/;
 
-        if(l.length < 2){
+        if(list.length < 2){
             logThrow("LispMarkup.macros.FOR: at least 1 arguments required."); }
 
         if(Array.isArray(one)){
@@ -795,7 +795,7 @@ function defineMacros(){
         if(index != params.length){
             logThrow("LispMarkup.macros.FOR: not all arguments were used."); }
 
-        var rest = l.slice(2);
+        var rest = list.slice(2);
         var result_parts = [];
         var vars = {};
         var loop = [];
@@ -842,18 +842,18 @@ function defineMacros(){
     // variables must begin with '$'
     // variables can be referenced as '$a' or '${a}'
     // only assigned variables are substituted.  '$' not part of an assigned variable are ignored.
-    function _let( l,data,markupConverter){
-        var one = l[1];
+    function _let( list,data,markupConverter){
+        var one = list[1];
         var assign_list;
         var substitutions = {};
 
-        if(l.length < 3){
+        if(list.length < 3){
             logThrow("LispMarkup.macros.LET: At least 2 arguments are required"); }
 
         if(Array.isArray(one)){
             assign_list = one; }
         else{
-            assign_list = [l[1],l[2]]; }
+            assign_list = [list[1],list[2]]; }
 
         if(assign_list.length % 2 != 0){
             logThrow("LispMarkup.macros.LET: assignment list must be even length."); }
@@ -875,10 +875,10 @@ function defineMacros(){
         }
         
         // do substitutions
-        var l = substitute(l.slice(Array.isArray(one)? 2 : 3), substitutions);
+        var list = substitute(list.slice(Array.isArray(one)? 2 : 3), substitutions);
         var result_parts = [];
-        for(var i=0; i<l.length; ++i){
-            result_parts.push(markupConverter(l[i], data).toString()); }
+        for(var i=0; i<list.length; ++i){
+            result_parts.push(markupConverter(list[i], data).toString()); }
         return result_parts.join(''); 
     }
 
@@ -929,41 +929,41 @@ function defineMacros(){
         }
         return x;
     }
-    function concat( l,data,markupConverter){
+    function concat( list,data,markupConverter){
         var result_parts = [''];
-        for(var i=1; i<l.length; ++i){
-            var s = markupConverter( l[i],data);
+        for(var i=1; i<list.length; ++i){
+            var s = markupConverter( list[i],data);
             result_parts.push(s.toString().trim()); }
         return result_parts.join('');
     }
-    function concat_space( l,data,markupConverter){
+    function concat_space( list,data,markupConverter){
         var result_parts = [''];
-        for(var i=1; i<l.length; ++i){
-            var s = markupConverter( l[i],data);
+        for(var i=1; i<list.length; ++i){
+            var s = markupConverter( list[i],data);
             result_parts.push(s.toString()); }
         return result_parts.join('');
     }
 
-    function get( l,data,markupConverter){
-        if(l.length == 1){
+    function get( list,data,markupConverter){
+        if(list.length == 1){
             return data.toString(); }
-        else if(l.length == 2){
+        else if(list.length == 2){
             
-            return data[l[1]]? data[l[1]].toString() : ""; }
-        else if(l.length == 3){
-            var value = data[l[1]];
+            return data[list[1]]? data[list[1]].toString() : ""; }
+        else if(list.length == 3){
+            var value = data[list[1]];
             if(value === null || value === undefined){
                 // compute default value
-                value = markupConverter(l[2],data,markupConverter); }
+                value = markupConverter(list[2],data,markupConverter); }
             return value.toString(); }
         else{
             logThrow("LispMarkup.macros.get invalid number of list arguments"); 
         }
     }
-    function css( l,data,markupConverter){
+    function css( list,data,markupConverter){
         var result_parts = ['<style>'];
-        for(var i=1; i<l.length; ++i){
-            result_parts.push(handleEntry(l[i])); }
+        for(var i=1; i<list.length; ++i){
+            result_parts.push(handleEntry(list[i])); }
         result_parts.push('</style>');
         return result_parts.join('');
         
