@@ -125,7 +125,7 @@ function defineExports(){
     function addFunction(function_name, func){
         addMacro(function_name, makeMacro(func));
         function makeMacro(f){
-            return function( list,data,markupConverter){
+            return function( list,props,data,markupConverter){
                 var args = [];
                 for(var i=1; i<list.length; ++i){
                     args.push(markupConverter(list[i], data)); }
