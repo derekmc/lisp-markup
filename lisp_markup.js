@@ -166,14 +166,11 @@ function defineExports(){
             return lispToHtml(template, data); }
     }
     
-    // uses a shorthand language for element tagname, id, and (css) classes:
-    //   tagname#id.class1.class2
-    function htmlTagHandler(tagstr, props){
+    // returns the tag, fills props.
+    function parseTagShorthand(props, tagstr){
         T("", tagstr);
-        T(undefined, {}, props);
-        if(!props) props = {}
-        var open_parts = ["<"],
-            i = 0,
+        props = T({}, D({}, props));
+        var i = 0,
             j = 0,
             class_list = [],
             tagname = "",
@@ -199,6 +196,27 @@ function defineExports(){
             next_symbol(); }
         if(tagname.length == 0){
             tagname = "div"; }
+
+        if(class_list.length){
+            props.class = (props.class? props.class+ ' ' : '') +  class_list.join(' ');
+        }
+        return tagname;
+    }
+    // uses a shorthand language for element tagname, id, and (css) classes:
+    //   tagname#id.class1.class2
+    function htmlTagHandler(tagstr, props){
+        T("", tagstr);
+        T(undefined, {}, props);
+        if(!props) props = {}
+        var open_parts = ["<"],
+            i = 0,
+            j = 0,
+            class_list = [],
+            tagname = "",
+            current_symbol = 'tag'; // 'tag' | 'id' | 'class'
+
+        // aggregate props
+        var tagname = parseTagShorthand(props, tagstr);
         open_parts.push(tagname);
         var proplist = [];
         // make proplist
@@ -345,11 +363,14 @@ function defineExports(){
                 if(macros.hasOwnProperty(first)){
                     first = macros[first]; }
                 else{
-                    tagname = first; }}
+                    tagname = parseTagShorthand(props, first);
+                    console.log('tagname', tagname);
+                    if(macros.hasOwnProperty(tagname)){
+                        first = macros[tagname]; }}}
             if(typeof first == "function"){
                 // first is a macro
                 var macro = first;
-                var macro_props = {};
+                var macro_props = mergeObjects(null, props);
                 for(var i=1; i<list.length; ++i){
                     var x = list[i];
                     if(typeof x == "object" && !Array.isArray(x)){
