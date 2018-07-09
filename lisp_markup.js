@@ -364,7 +364,6 @@ function defineExports(){
                     first = macros[first]; }
                 else{
                     tagname = parseTagShorthand(props, first);
-                    console.log('tagname', tagname);
                     if(macros.hasOwnProperty(tagname)){
                         first = macros[tagname]; }}}
             if(typeof first == "function"){
