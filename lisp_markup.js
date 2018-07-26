@@ -370,7 +370,7 @@ function defineExports(){
                 // first is a macro
                 var macro = first;
                 var macro_props = mergeObjects(null, props);
-                var macro_list = [];
+                var macro_list = [first];
                 for(var i=1; i<list.length; ++i){
                     var x = list[i];
                     if(typeof x == "object" && !Array.isArray(x)){
