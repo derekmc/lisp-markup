@@ -370,13 +370,16 @@ function defineExports(){
                 // first is a macro
                 var macro = first;
                 var macro_props = mergeObjects(null, props);
+                var macro_list = [];
                 for(var i=1; i<list.length; ++i){
                     var x = list[i];
                     if(typeof x == "object" && !Array.isArray(x)){
                         mergeObjects(macro_props, x); }
+                    else{
+                        macro_list.push(x); }
                 }
 
-                var macro_result = macro( list,macro_props,data,markupConverter);
+                var macro_result = macro( macro_list,macro_props,data,markupConverter);
                 if(typeof macro_result == "string"){
                     return macro_result; }
                 else if(Array.isArray(macro_result)){
@@ -408,7 +411,7 @@ function defineExports(){
                             else if(property_value === null || property_value === undefined){
                                 props[k] = null; }
                             else{
-                                logThrow("LispMarkup: illegal property value type."); }}}
+                                logThrow("LispMarkup: illegal property value type.", property_value, typeof property_value); }}}
                     else{
                         // TODO typecheck
                         result_parts.push(result); }}
@@ -435,7 +438,7 @@ function defineExports(){
                                 else{
                                     logThrow("LispMarkup markup conversion function: template returned value with invalid type."); }}}
                         else{
-                            logThrow("LispMarkup: illegal property value type."); }}}
+                            logThrow("LispMarkup: illegal property value type.", property_value, typeof property_value); }}}
                 else if(typeof x == "function"){
                     // view function
                     var view = x;
