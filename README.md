@@ -5,7 +5,7 @@
 
 
 ## Minimal Example
-To edit this example, go to https://jsfiddle.net/derekmc7/kdp4gaxy/
+To experiment with this example, go to https://jsfiddle.net/derekmc7/kdp4gaxy/
 ```html
   <html>
     <head>
