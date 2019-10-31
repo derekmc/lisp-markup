@@ -1,7 +1,25 @@
 
 
 # lisp-markup
-#### Markup in lisp syntax with macros and templates.
+#### Markup in lisp syntax
+
+
+## Minimal Example
+To edit this example, go to https://jsfiddle.net/derekmc7/kdp4gaxy/
+  <html>
+    <head>
+      <script src="https://gitcdn.link/repo/derekmc/lisp-markup/master/lisp_markup_bundle.js"></script>
+      <script>
+        var main_data = {name: "Guest", interest: "Pizza"};
+      </script>
+      <script id="main-template" type="text/lisp-markup">
+        (h1 Welcome (@ name))
+        (p I hear you like (@ interest))
+      </script>
+      <body>
+        <div id="main"></div>
+      </body>
+   </html>
 
 ## Overview
 
